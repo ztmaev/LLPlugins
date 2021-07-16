@@ -4,7 +4,6 @@
 #include <string>
 #include <variant>
 
-
 void entry()
 {
     std::cout << "[FixBeacon] Bug in Beacon fixed." << std::endl;
