@@ -20,6 +20,8 @@ struct SnapshotFilenameAndLength
 	size_t size;
 };
 
+void ResumeBackup();
+
 void SuccessEnd()
 {
     SendFeedback(nowPlayer, "备份成功结束");
@@ -30,6 +32,7 @@ void SuccessEnd()
 void FailEnd(int code=-1)
 {
     SendFeedback(nowPlayer, string("备份失败！") + (code == -1 ? "" : "错误码：" + to_string(code)));
+    ResumeBackup();
     nowPlayer = nullptr;
     isWorking = false;
 }
@@ -194,11 +197,17 @@ void ZipFiles(const string &worldName)
         FailEnd(GetLastError());
     }
 
+    DWORD maxWait= ini.GetLongValue("Main", "MaxWaitForZip", 0);
+    if (maxWait <= 0)
+        maxWait = 0xFFFFFFFF;
+    else
+        maxWait *= 1000;
+
     ControlResourceUsage(pi.hProcess);
     ResumeThread(pi.hThread);
 
     DWORD res;
-    if ((res = WaitForSingleObject(pi.hProcess, ini.GetLongValue("Main", "MaxWaitForZip", -1))) == WAIT_TIMEOUT || res == WAIT_FAILED)
+    if ((res = WaitForSingleObject(pi.hProcess, maxWait)) == WAIT_TIMEOUT || res == WAIT_FAILED)
     {
         SendFeedback(nowPlayer, "Zip process timeout!");
         FailEnd(GetLastError());
@@ -226,6 +235,35 @@ void StartBackup()
 #define RETRY_TIME 60
 int resumeTime = -1;
 
+void ResumeBackup()
+{
+    try
+    {
+        auto res = liteloader::runcmdEx("save resume");
+        if (!res.first)
+        {
+            SendFeedback(nowPlayer, "Failed to resume backup snapshot!");
+            if (isWorking)
+                resumeTime = RETRY_TIME;
+            else
+                resumeTime = -1;
+        }
+        else
+        {
+            SendFeedback(nowPlayer, res.second);
+            resumeTime = -1;
+        }
+    }
+    catch (const seh_exception& e)
+    {
+        SendFeedback(nowPlayer, "Failed to resume backup snapshot! Error Code:" + to_string(e.code()));
+        if (isWorking)
+            resumeTime = RETRY_TIME;
+        else
+            resumeTime = -1;
+    }
+}
+
 THook(void, "?tick@ServerLevel@@UEAAXXZ",
     void* _this)
 {
@@ -235,43 +273,9 @@ THook(void, "?tick@ServerLevel@@UEAAXXZ",
     {
         if (!isWorking)
             resumeTime = -1;
-        try
-        {
-            auto res = liteloader::runcmdEx("save resume");
-            if (!res.first)
-            {
-                SendFeedback(nowPlayer, "Failed to resume backup snapshot!");
-                if (isWorking)
-                    resumeTime = RETRY_TIME;
-                else
-                    resumeTime = -1;
-            }
-            else
-            {
-                SendFeedback(nowPlayer, res.second);
-                resumeTime = -1;
-            }
-        }
-        catch (const seh_exception& e)
-        {
-            SendFeedback(nowPlayer, "Failed to resume backup snapshot! Error Code:" + to_string(e.code()));
-            if (isWorking)
-                resumeTime = RETRY_TIME;
-            else
-                resumeTime = -1;
-        }
+        ResumeBackup();
     }
-
-    try
-    {
-        return original(_this);
-    }
-    catch (const seh_exception& e)
-    {
-        SendFeedback(nowPlayer, "Crash in resume! Error Code:" + to_string(e.code()));
-        if (isWorking)
-            resumeTime = RETRY_TIME;
-    }
+    return original(_this);
 }
 
 struct DBStorage;
@@ -284,7 +288,7 @@ THook(vector<SnapshotFilenameAndLength>&, "?createSnapshot@DBStorage@@UEAA?AV?$v
 
     thread([worldName]()
     {
-        ZipFiles(worldName);
+        //ZipFiles(worldName);
         CleanTempDir();
         SuccessEnd();
     }).detach();
