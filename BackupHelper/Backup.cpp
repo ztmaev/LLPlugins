@@ -74,7 +74,8 @@ void ClearOldBackup()
     SendFeedback(nowPlayer, "备份最长保存时间：" + to_string(days) + "天");
 
     time_t timeStamp = time(NULL) - days * 86400;
-    wstring dirFind = U8StringToWString(ini.GetValue("Main", "BackupPath", "backup")) + L"\\*";
+    wstring dirBackup = U8StringToWString(ini.GetValue("Main", "BackupPath", "backup"));
+    wstring dirFind = dirBackup + L"\\*";
 
     WIN32_FIND_DATA findFileData;
     ULARGE_INTEGER createTime;
@@ -96,7 +97,7 @@ void ClearOldBackup()
             createTime.HighPart = findFileData.ftCreationTime.dwHighDateTime;
             if (createTime.QuadPart / 10000000 - 11644473600 < (ULONGLONG)timeStamp)
             {
-                DeleteFile((dirFind + findFileData.cFileName).c_str());
+                DeleteFile((dirBackup + L"\\" + findFileData.cFileName).c_str());
                 ++clearCount;
             }
         }
