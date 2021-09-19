@@ -1,21 +1,13 @@
 #include "pch.h"
 #include "headers/lbpch.h"
 #include "headers/mc/OffsetHelper.h"
-#include "headers/mc/core.h"
-#include "headers/mc/block.h"
-#include "headers/mc/item.h"
-#include "headers/mc/mass.h"
 #include "headers/api/commands.h"
-#include "headers/api/Basic_Event.h"
 #include "headers/loader/Loader.h"
-#include "headers/mc/BlockSource.h"
-#include "headers/mc/Block.h"
-#include "headers/mc/Player.h"
 #include <string>
 #include "SimpleIni.h"
 using namespace std;
 
-#define _VER "1.5.0"
+#define _VER "1.5.2"
 #define _CONF_PATH "plugins/BanExplosion/config.ini"
 
 CSimpleIniA ini;
@@ -65,6 +57,24 @@ THook(void, "?explode@RespawnAnchorBlock@@CAXAEAVPlayer@@AEBVBlockPos@@AEAVBlock
     if (!suspend && ini.GetBoolValue("minecraft:respawn_anchor", "NoExplosion"))
         return;
     return original(_this, pl, bp, bs, level);
+}
+
+// ===== onWitherBossDestroy =====
+THook(void, "?_destroyBlocks@WitherBoss@@AEAAXAEAVLevel@@AEBVAABB@@AEAVBlockSource@@H@Z",
+    void* _this, Level* a2, AABB* a3, BlockSource* a4, int a5)
+{
+    if (ini.GetBoolValue("minecraft:wither", "NoDestroyBlock"))
+        return;
+    original(_this, a2, a3, a4, a5);
+}
+
+// ===== onWitherBossDestroy =====
+THook(bool, "?canDestroy@WitherBoss@@SA_NAEBVBlock@@@Z",
+    Block *bl)
+{
+    if (ini.GetBoolValue("minecraft:wither", "NoDestroyBlock"))
+        return false;
+    return original(bl);
 }
 
 
