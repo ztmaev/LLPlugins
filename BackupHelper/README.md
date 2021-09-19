@@ -1,4 +1,5 @@
 # BackupHelper
-Online backup plugin for BDS
-Based on BDSNetRunner
+Hot-backup plugin for BDS
+Based on LiteLoader
+
 ### Support me at https://www.minebbs.com/resources/backuphelper-bds.2111/
