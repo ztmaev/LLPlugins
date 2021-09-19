@@ -147,74 +147,87 @@ void CopyFiles(const string &worldName, vector<SnapshotFilenameAndLength>& files
 
 void ZipFiles(const string &worldName)
 {
-    //Get Name
-    char timeStr[32];
-    time_t nowtime;
-    time(&nowtime);
-    struct tm* info = localtime(&nowtime);
-    strftime(timeStr, sizeof(timeStr), "%Y-%m-%d_%H-%M-%S", info);
-
-    string backupPath = ini.GetValue("Main", "BackupPath", "backup");
-    int level = ini.GetLongValue("Main", "Compress", 0);
-
-    char tmpCmdStr[_MAX_PATH * 4] = { 0 };
-    sprintf(tmpCmdStr, "%s a \"%s\\%s_%s.7z\" \"%s%s\" -sdel -mx%d -mmt"
-        , ZIP_PATH, backupPath.c_str(), worldName.c_str(), timeStr, TEMP_DIR, worldName.c_str(), level);
-
-    wchar_t cmdStr[_MAX_PATH * 4] = { 0 };
-    U8StringToWString(tmpCmdStr).copy(cmdStr, strlen(tmpCmdStr), 0);
-
-    //Prepare for output
-    STARTUPINFO si = { sizeof(STARTUPINFO) };
-    SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES),NULL,TRUE };
-    HANDLE hZipOutput = INVALID_HANDLE_VALUE;
-
-    string zipLog = ini.GetValue("Main", "7zLog", "");
-    if (!zipLog.empty())
+    try
     {
-        hZipOutput = CreateFile(U8StringToWString(zipLog).c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
-            &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (hZipOutput != INVALID_HANDLE_VALUE)
+        //Get Name
+        char timeStr[32];
+        time_t nowtime;
+        time(&nowtime);
+        struct tm* info = localtime(&nowtime);
+        strftime(timeStr, sizeof(timeStr), "%Y-%m-%d_%H-%M-%S", info);
+
+        string backupPath = ini.GetValue("Main", "BackupPath", "backup");
+        int level = ini.GetLongValue("Main", "Compress", 0);
+
+        char tmpCmdStr[_MAX_PATH * 4] = { 0 };
+        sprintf(tmpCmdStr, "%s a \"%s\\%s_%s.7z\" \"%s%s\" -sdel -mx%d -mmt"
+            , ZIP_PATH, backupPath.c_str(), worldName.c_str(), timeStr, TEMP_DIR, worldName.c_str(), level);
+
+        wchar_t cmdStr[_MAX_PATH * 4] = { 0 };
+        U8StringToWString(tmpCmdStr).copy(cmdStr, strlen(tmpCmdStr), 0);
+
+        //Prepare for output
+        STARTUPINFO si = { sizeof(STARTUPINFO) };
+        SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES),NULL,TRUE };
+        HANDLE hZipOutput = INVALID_HANDLE_VALUE;
+
+        string zipLog = ini.GetValue("Main", "7zLog", "");
+        if (!zipLog.empty())
         {
-            si.hStdOutput = hZipOutput;
-            si.hStdError = hZipOutput;
+            hZipOutput = CreateFile(U8StringToWString(zipLog).c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+            if (hZipOutput != INVALID_HANDLE_VALUE)
+            {
+                si.hStdOutput = hZipOutput;
+                si.hStdError = hZipOutput;
+            }
+            else
+                si.hStdOutput = si.hStdError = INVALID_HANDLE_VALUE;
         }
         else
             si.hStdOutput = si.hStdError = INVALID_HANDLE_VALUE;
+
+        si.dwFlags = STARTF_USESTDHANDLES;
+
+        //Create zip process
+        PROCESS_INFORMATION pi;
+        ZeroMemory(&pi, sizeof(pi));
+
+        if (!CreateProcessW(NULL, cmdStr, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, NULL, &si, &pi))
+        {
+            SendFeedback(nowPlayer, "Failed to start zip process!");
+            FailEnd(GetLastError());
+        }
+
+        DWORD maxWait = ini.GetLongValue("Main", "MaxWaitForZip", 0);
+        if (maxWait <= 0)
+            maxWait = 0xFFFFFFFF;
+        else
+            maxWait *= 1000;
+
+        ControlResourceUsage(pi.hProcess);
+        ResumeThread(pi.hThread);
+
+        DWORD res;
+        if ((res = WaitForSingleObject(pi.hProcess, maxWait)) == WAIT_TIMEOUT || res == WAIT_FAILED)
+        {
+            SendFeedback(nowPlayer, "Zip process timeout!");
+            FailEnd(GetLastError());
+        }
+        if (hZipOutput != INVALID_HANDLE_VALUE)
+            CloseHandle(hZipOutput);
+        CloseHandle(pi.hProcess);
     }
-    else
-        si.hStdOutput = si.hStdError = INVALID_HANDLE_VALUE;
-
-    si.dwFlags = STARTF_USESTDHANDLES;
-
-    //Create zip process
-    PROCESS_INFORMATION pi;
-    ZeroMemory(&pi, sizeof(pi));
-
-    if (!CreateProcessW(NULL, cmdStr, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, NULL, &si, &pi))
+    catch (const seh_exception& e)
     {
-        SendFeedback(nowPlayer, "Failed to start zip process!");
+        SendFeedback(nowPlayer, "Exception in zip process! Error Code:" + to_string(e.code()));
         FailEnd(GetLastError());
     }
-
-    DWORD maxWait= ini.GetLongValue("Main", "MaxWaitForZip", 0);
-    if (maxWait <= 0)
-        maxWait = 0xFFFFFFFF;
-    else
-        maxWait *= 1000;
-
-    ControlResourceUsage(pi.hProcess);
-    ResumeThread(pi.hThread);
-
-    DWORD res;
-    if ((res = WaitForSingleObject(pi.hProcess, maxWait)) == WAIT_TIMEOUT || res == WAIT_FAILED)
+    catch (const exception& e)
     {
-        SendFeedback(nowPlayer, "Zip process timeout!");
+        SendFeedback(nowPlayer, string("Exception in zip process!\n") + e.what());
         FailEnd(GetLastError());
     }
-    if (hZipOutput != INVALID_HANDLE_VALUE)
-        CloseHandle(hZipOutput);
-    CloseHandle(pi.hProcess);
 }
 
 void StartBackup()
@@ -288,7 +301,7 @@ THook(vector<SnapshotFilenameAndLength>&, "?createSnapshot@DBStorage@@UEAA?AV?$v
 
     thread([worldName]()
     {
-        //ZipFiles(worldName);
+        ZipFiles(worldName);
         CleanTempDir();
         SuccessEnd();
     }).detach();
