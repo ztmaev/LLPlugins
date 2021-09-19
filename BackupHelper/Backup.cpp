@@ -257,6 +257,8 @@ THook(void, "?tick@ServerLevel@@UEAAXXZ",
             SendFeedback(nowPlayer, "Failed to resume backup snapshot! Error Code:" + to_string(e.code()));
             if (isWorking)
                 resumeTime = RETRY_TIME;
+            else
+                resumeTime = -1;
         }
     }
 
@@ -277,7 +279,6 @@ THook(vector<SnapshotFilenameAndLength>&, "?createSnapshot@DBStorage@@UEAA?AV?$v
     DBStorage* _this, vector<SnapshotFilenameAndLength>& fileData, string& worldName)
 {
     isWorking = true;
-    dbs = _this;
 	auto& files = original(_this, fileData, worldName);
     CopyFiles(worldName, files);
 
