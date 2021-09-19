@@ -107,7 +107,8 @@ void ClearOldBackup()
 
 void CleanTempDir()
 {
-    filesystem::remove_all(filesystem::path(TEMP_DIR));
+    error_code code;
+    filesystem::remove_all(filesystem::path(TEMP_DIR),code);
 }
 
 void CopyFiles(const string &worldName, vector<SnapshotFilenameAndLength>& files)
@@ -225,9 +226,6 @@ void StartBackup()
 #define RETRY_TIME 60
 int resumeTime = -1;
 
-struct DBStorage;
-DBStorage* dbs;
-
 THook(void, "?tick@ServerLevel@@UEAAXXZ",
     void* _this)
 {
@@ -274,10 +272,11 @@ THook(void, "?tick@ServerLevel@@UEAAXXZ",
     }
 }
 
-
+struct DBStorage;
 THook(vector<SnapshotFilenameAndLength>&, "?createSnapshot@DBStorage@@UEAA?AV?$vector@USnapshotFilenameAndLength@@V?$allocator@USnapshotFilenameAndLength@@@std@@@std@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@3@@Z",
     DBStorage* _this, vector<SnapshotFilenameAndLength>& fileData, string& worldName)
 {
+    isWorking = true;
     dbs = _this;
 	auto& files = original(_this, fileData, worldName);
     CopyFiles(worldName, files);
@@ -285,7 +284,7 @@ THook(vector<SnapshotFilenameAndLength>&, "?createSnapshot@DBStorage@@UEAA?AV?$v
     thread([worldName]()
     {
         ZipFiles(worldName);
-        filesystem::remove_all(filesystem::path(TEMP_DIR));
+        CleanTempDir();
         SuccessEnd();
     }).detach();
 
