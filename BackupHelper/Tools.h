@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <string>
+#include <exception>
 using namespace std;
 
 inline void ErrorOutput(const string& e)
@@ -22,18 +23,22 @@ inline void SendFeedback(Player* p, const string& msg)
         std::cout << "[BackupHelper] " << msg << std::endl;
     else
     {
-        DelayedTask task([p, msg]() {
-            try
-            {
-                Raw_Tell(p, "<BackupHelper> " + msg, TextType::SYSTEM);
-            }
-            catch (const seh_exception&)
-            {
-                extern Player* nowPlayer;
-                nowPlayer = nullptr;
-                std::cout << "[BackupHelper] " << msg << std::endl;
-            }
-        }, 1);
+        try
+        {
+            Raw_Tell(p, "§e[BackupHelper]§r " + msg, TextType::RAW);
+        }
+        catch (const seh_exception&)
+        {
+            extern Player* nowPlayer;
+            nowPlayer = nullptr;
+            std::cout << "[BackupHelper] " << msg << std::endl;
+        }
+        catch (const exception&)
+        {
+            extern Player* nowPlayer;
+            nowPlayer = nullptr;
+            std::cout << "[BackupHelper] " << msg << std::endl;
+        }
     }
 }
 

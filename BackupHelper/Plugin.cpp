@@ -80,7 +80,7 @@ void entry()
 
     Event::addEventListener([](RegCmdEV e) {
         CMDREG::SetCommandRegistry(e.CMDRg);
-        RegisterCmd("backup", "Create a backup", 4);
+        //RegisterCmd("backup", "Create a backup", 4);
         RegisterCmd("backup", "Create a backup", 1);
     });
 }
