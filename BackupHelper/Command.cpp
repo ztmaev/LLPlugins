@@ -20,12 +20,15 @@ void CmdReloadConfig(Player *p)
 
 void CmdBackup(Player* p)
 {
+    Player* oldp = nowPlayer;
+    nowPlayer = p;
     if (isWorking)
     {
-        SendFeedback(p, "A backup is working now...");
+        SendFeedback(p, "An existing backup is working now...");
+        nowPlayer = oldp;
     }
-    nowPlayer = p;
-    StartBackup();
+    else
+        StartBackup();
 }
 
 void CmdCancel(Player* p)

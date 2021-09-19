@@ -25,12 +25,13 @@ inline void SendFeedback(Player* p, const string& msg)
         DelayedTask task([p, msg]() {
             try
             {
-                Raw_Tell(p, "<BackupHelper> " + msg, TextType::RAW);
+                Raw_Tell(p, "<BackupHelper> " + msg, TextType::SYSTEM);
             }
             catch (const seh_exception&)
             {
                 extern Player* nowPlayer;
                 nowPlayer = nullptr;
+                std::cout << "[BackupHelper] " << msg << std::endl;
             }
         }, 1);
     }
