@@ -1,12 +1,10 @@
 #include "pch.h"
 #include "headers/lbpch.h"
 #include "headers/mc/OffsetHelper.h"
-#include "headers/api/commands.h"
 #include "headers/api/Basic_Event.h"
 #include <string>
 #include <Windows.h>
 #include <stdlib.h>
-#include <signal.h>
 #include "SimpleIni.h"
 using namespace std;
 
@@ -83,7 +81,6 @@ THook(bool, "??$inner_enqueue@$0A@AEBV?$basic_string@DU?$char_traits@D@std@@V?$a
 }
 
 //Message
-
 BOOL CtrlHandler(DWORD fdwCtrlType)
 {
     switch (fdwCtrlType)
@@ -104,52 +101,17 @@ BOOL CtrlHandler(DWORD fdwCtrlType)
     }
 }
 
-HHOOK hHook;
-
-LRESULT CALLBACK WmProc(int code, WPARAM wp, LPARAM lp)
-{
-    if (code >= 0)
-    {
-        PCWPSTRUCT msg = (PCWPSTRUCT)lp;
-        switch (msg->message)
-        {
-        case WM_CLOSE:
-        case WM_DESTROY:
-        case WM_ENDSESSION:
-        case WM_QUERYENDSESSION:
-            cout << "[BetterStop] Stop detected." << endl;
-            SafeStop();
-            msg->message = WM_NULL;
-            return 0;
-            break;
-        default:
-            break;
-        }
-    }
-    return CallNextHookEx(NULL, code, wp, lp);
-}
-
-void SignalHandler(int signal)
-{
-    printf("Application aborting...\n");
-}
-
-
 //Main
 void entry(HMODULE hMod)
 {
-    HWND hWnd = GetConsoleWindow();
-    DWORD pid, tid = GetWindowThreadProcessId(hWnd, &pid);
-
-    if(!SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE))
+    if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE))
         cerr << "[BetterStop] Fail to enable Console Close Protection!" << endl;
 
-    if((hHook = SetWindowsHookEx(WH_CALLWNDPROC, WmProc, hMod, tid)) == NULL)
-        cerr << "[BetterStop] Fail to enable WmDestroy Protection!" << endl;
-
-    typedef void (*SignalHandlerPointer)(int);
-    SignalHandlerPointer previousHandler;
-    previousHandler = signal(SIGINT, SIG_IGN);
+    HWND hwnd = GetConsoleWindow();
+    HMENU hmenu = GetSystemMenu(hwnd, false);
+    RemoveMenu(hmenu, SC_CLOSE, MF_BYCOMMAND);
+    DestroyMenu(hmenu);
+    ReleaseDC(hwnd, NULL);
 
     Event::addEventListener([](ServerStartedEV ev)
     {
