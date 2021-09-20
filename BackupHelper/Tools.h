@@ -19,6 +19,22 @@ inline bool Raw_Tell(Player* player, const std::string& text, TextType type)
 
 inline void SendFeedback(Player* p, const string& msg)
 {
+    auto pls = liteloader::getAllPlayers();
+    bool found = false;
+    for (auto& pl : pls)
+    {
+        if (pl == p)
+        {
+            found = true;
+            break;
+        }
+    }
+    if (!found)
+    {
+        extern Player* nowPlayer;
+        nowPlayer = p = nullptr;
+    }
+
     if (!p)
         std::cout << "[BackupHelper] " << msg << std::endl;
     else

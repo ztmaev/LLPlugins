@@ -6,7 +6,7 @@
 #include "i18n.h"
 using namespace std;
 
-#define _VER "2.0.0"
+#define _VER "2.0.1"
 CSimpleIniA ini;
 
 
@@ -24,9 +24,9 @@ THook(bool, "??$inner_enqueue@$0A@AEBV?$basic_string@DU?$char_traits@D@std@@V?$a
 {
     if (cmd.front() == '/')
         cmd = cmd.substr(1);
-    if (cmd == "stop" && isCopying)
+    if (cmd == "stop" && isWorking)
     {
-        ErrorOutput("Cannot stop! Backuping is working now.");
+        ErrorOutput("在备份过程中请不要stop！");
         return false;
     }
     return original(_this, cmd);

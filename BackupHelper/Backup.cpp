@@ -12,7 +12,6 @@ using namespace std;
 #define ZIP_PATH ".\\plugins\\BackupHelper\\7za.exe"
 
 bool isWorking = false;
-bool isCopying = false;
 Player* nowPlayer = nullptr;
 
 struct SnapshotFilenameAndLength
