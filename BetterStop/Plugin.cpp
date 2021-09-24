@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "headers/lbpch.h"
 #include "headers/mc/OffsetHelper.h"
-#include "headers/api/Basic_Event.h"
+//#include "headers/api/Basic_Event.h"
 #include <string>
 #include <Windows.h>
 #include <stdlib.h>
@@ -52,7 +52,6 @@ THook(void, "?initAsDedicatedServer@Minecraft@@QEAAXXZ",
 
 void SafeStop()
 {
-    MessageBoxA(NULL, "hhh", "tewst", 0);
     if (isStopping)
         return;
     isStopping = true;
