@@ -11,8 +11,8 @@
 #include <iostream>
 #include "headers/lbpch.h"
 #include "headers/mc/mass.h"
-#include "headers/api/commands.h"
-#include "headers/api/Basic_Event.h"
+#include "headers/api/regCommandHelper.h"
+#include "headers/api/basicEvent.h"
 #include "headers/api/scheduler/scheduler.h"
 #include <string>
 #include <vector>

@@ -10,10 +10,8 @@
 // 添加要在此处预编译的标头
 #include <iostream>
 #include "headers/lbpch.h"
-#include "headers/mc/core.h"
-#include "headers/mc/mass.h"
 #include "headers/api/commands.h"
-#include "headers/api/Basic_Event.h"
+//#include "headers/api/Basic_Event.h"
 #include "headers/api/scheduler/scheduler.h"
 #include <string>
 #include <vector>

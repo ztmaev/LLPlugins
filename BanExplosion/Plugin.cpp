@@ -7,7 +7,7 @@
 #include "SimpleIni.h"
 using namespace std;
 
-#define _VER "1.5.2"
+#define _VER "1.5.3"
 #define _CONF_PATH "plugins/BanExplosion/config.ini"
 
 CSimpleIniA ini;
@@ -24,7 +24,7 @@ std::string Raw_GetEntityTypeName(Actor* actor)
 bool suspend = false;
 
 // ===== onExplode & onBedExplode =====
-THook(bool, "?explode@Level@@UEAAXAEAVBlockSource@@PEAVActor@@AEBVVec3@@M_N3M3@Z",
+THook(void, "?explode@Level@@UEAAXAEAVBlockSource@@PEAVActor@@AEBVVec3@@M_N3M3@Z",
     Level* _this, BlockSource* bs, Actor* actor, Vec3* pos, float power, bool isFire, bool isDestroy, float range, bool a9)
 {
     if (!suspend)
@@ -34,7 +34,7 @@ THook(bool, "?explode@Level@@UEAAXAEAVBlockSource@@PEAVActor@@AEBVVec3@@M_N3M3@Z
             //常规
             string name = Raw_GetEntityTypeName(actor);
             if (ini.GetBoolValue(name.c_str(), "NoExplosion"))
-                return false;
+                return;
             if (ini.GetBoolValue(name.c_str(), "NoDestroyBlock"))
                 isDestroy = false;
         }
@@ -42,12 +42,12 @@ THook(bool, "?explode@Level@@UEAAXAEAVBlockSource@@PEAVActor@@AEBVVec3@@M_N3M3@Z
         {
             //床
             if (ini.GetBoolValue("minecraft:bed", "NoExplosion"))
-                return false;
+                return;
             if (ini.GetBoolValue("minecraft:bed", "NoDestroyBlock"))
                 isDestroy = false;
         }
     }
-    return original(_this, bs, actor, pos, power, isFire, isDestroy, range, a9);
+    original(_this, bs, actor, pos, power, isFire, isDestroy, range, a9);
 }
 
 // ===== onRespawnAnchorExplode =====

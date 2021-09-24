@@ -1,5 +1,5 @@
 #include "pch.h"
-#include <api/commands.h>
+#include <api/regCommandHelper.h>
 #include <loader/Loader.h>
 #include <iostream>
 #include <string>

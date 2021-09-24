@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "headers/api/commands.h"
+#include "headers/api/regCommandHelper.h"
 #include "headers/api/types/types.h"
 #include "headers/loader/Loader.h"
 #include "headers/mc/Player.h"

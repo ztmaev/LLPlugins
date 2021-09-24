@@ -6,7 +6,7 @@
 #include "i18n.h"
 using namespace std;
 
-#define _VER "2.0.1"
+#define _VER "2.0.2"
 CSimpleIniA ini;
 
 

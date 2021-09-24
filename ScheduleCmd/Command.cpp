@@ -97,7 +97,7 @@ bool CmdRemoveSchedule(const string& cmd)
 THook(bool, "?executeCommand@MinecraftCommands@@QEBA?AUMCRESULT@@V?$shared_ptr@VCommandContext@@@std@@_N@Z",
     MinecraftCommands* _this, unsigned int* a2, std::shared_ptr<CommandContext> x, char a4)
 {
-    Player* player = MakeSP(x->getOrigin());
+    Player* player = (Player*)MakeSP(x->getOrigin());
     string cmd = x->getCmd();
     if (cmd.front() == '/')
         cmd = cmd.substr(1);
