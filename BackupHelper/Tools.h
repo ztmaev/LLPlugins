@@ -6,20 +6,14 @@
 #include <exception>
 using namespace std;
 
-inline void ErrorOutput(const string& e)
+inline void ErrorOutput(const string& err)
 {
-    cerr << "[BackupHelper] " << e << endl;
-}
-
-inline bool Raw_Tell(Player* player, const std::string& text, TextType type)
-{
-    WPlayer(*player).sendText(text, type);
-    return true;
+    Logger::Error("{}",err);
 }
 
 inline void SendFeedback(Player* p, const string& msg)
 {
-    auto pls = liteloader::getAllPlayers();
+    auto pls = Level::getAllPlayers();
     bool found = false;
     for (auto& pl : pls)
     {
@@ -36,24 +30,24 @@ inline void SendFeedback(Player* p, const string& msg)
     }
 
     if (!p)
-        std::cout << "[BackupHelper] " << msg << std::endl;
+        Logger::Info(msg);
     else
     {
         try
         {
-            Raw_Tell(p, "§e[BackupHelper]§r " + msg, TextType::RAW);
+            p->sendTextPacket("§e[BackupHelper]§r " + msg, TextType::RAW);
         }
         catch (const seh_exception&)
         {
             extern Player* nowPlayer;
             nowPlayer = nullptr;
-            std::cout << "[BackupHelper] " << msg << std::endl;
+            Logger::Info(msg);
         }
         catch (const exception&)
         {
             extern Player* nowPlayer;
             nowPlayer = nullptr;
-            std::cout << "[BackupHelper] " << msg << std::endl;
+            Logger::Info(msg);
         }
     }
 }

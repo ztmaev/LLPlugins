@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <filesystem>
 #include "ConfigFile.h"
+#include "Command.h"
 #include "Backup.h"
 #include "Tools.h"
 #include "i18n.h"
@@ -8,15 +9,6 @@ using namespace std;
 
 #define _VER "2.0.2"
 CSimpleIniA ini;
-
-
-bool RegisterCmd(const string& cmd, const string& describe, int cmdLevel)
-{
-    SymCall("?registerCommand@CommandRegistry@@QEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PEBDW4CommandPermissionLevel@@UCommandFlag@@3@Z",
-        void, void*, const string&, const char*, char, char, char)
-        (CmdRegGlobal, cmd, describe.c_str(), cmdLevel, 0, 0x40);
-    return true;
-}
 
 // ===== onConsoleCmd =====
 THook(bool, "??$inner_enqueue@$0A@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$SPSCQueue@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@$0CAA@@@AEAA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
@@ -66,11 +58,12 @@ void entry()
     Raw_IniOpen(_CONFIG_FILE,"");
     InitI18n(string("plugins/BackupHelper/LangPack/") + ini.GetValue("Main", "Language", "en_US") + ".json");
 
-    cout << "[BackupHelper] BackupHelper存档备份助手-已装载  当前版本："  << _VER << endl;
-    cout << "[BackupHelper] OP/后台命令： backup 开始备份" << endl;
-    cout << "[BackupHelper] OP/后台命令： backup reload 重新加载配置文件" << endl;
-    cout << "[BackupHelper] 作者：yqs112358   首发平台：MineBBS" << endl;
-    cout << "[BackupHelper] 欲联系作者可前往MineBBS论坛" << endl;
+    
+	Logger::Info("BackupHelper存档备份助手-已装载  当前版本：{}", _VER);
+	Logger::Info("OP/后台命令： backup 开始备份");
+	Logger::Info("OP/后台命令： backup reload 重新加载配置文件");
+	Logger::Info("作者：yqs112358   首发平台：MineBBS");
+	Logger::Info("欲联系作者可前往MineBBS论坛");
 
     //Cleanup Old
     if (filesystem::exists("plugins/BackupHelper.lxl.js"))
@@ -78,9 +71,8 @@ void entry()
     if (filesystem::exists("plugins/BackupHelper/BackupRunner.exe"))
         filesystem::remove("plugins/BackupHelper/BackupRunner.exe");
 
-    Event::addEventListener([](RegCmdEV e) {
-        CMDREG::SetCommandRegistry(e.CMDRg);
-        //RegisterCmd("backup", "Create a backup", 4);
-        RegisterCmd("backup", "Create a backup", 1);
+    Event::RegCmdEvent::subscribe([](Event::RegCmdEvent e) {
+        registryCommand(e.mCommandRegistry);
+        return true;
     });
 }

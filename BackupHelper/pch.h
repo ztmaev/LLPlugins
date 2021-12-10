@@ -9,16 +9,16 @@
 
 // 添加要在此处预编译的标头
 #include <iostream>
-#include "headers/lbpch.h"
-#include "headers/mc/mass.h"
-#include "headers/api/regCommandHelper.h"
-#include "headers/api/basicEvent.h"
-#include "headers/api/scheduler/scheduler.h"
+#include "../Header/Global.h"
+#include "../Header/LLAPI.h"
+#include "../Header/MC/Player.hpp"
+#include "../Header/MC/Level.hpp"
+#include "../Header/EventAPI.h"
+#include "../Header/RegCommandAPI.h"
 #include <string>
 #include <vector>
 #include <windows.h>
 #include <iostream>
 #include <ctime>
-#include "seh_exception.hpp"
 
 #endif //PCH_H

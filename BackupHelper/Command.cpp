@@ -45,32 +45,49 @@ void CmdCancel(Player* p)
     }
 }
 
+using namespace RegisterCommandHelper;
 
-THook(bool, "?executeCommand@MinecraftCommands@@QEBA?AUMCRESULT@@V?$shared_ptr@VCommandContext@@@std@@_N@Z",
-    MinecraftCommands* _this, unsigned int* a2, std::shared_ptr<CommandContext> x, char a4)
-{
-    Player* player = (Player*)MakeSP(x->getOrigin());
+class BackupCommand : public Command {
+    enum BackupOP :int {
+        reload = 1,
+        cancel = 2,
+    } op;
+    bool op_isSet = false;
 
-    string cmd = x->getCmd();
-    if (cmd.front() == '/')
-        cmd = cmd.substr(1);
-    if (cmd.empty())
-        return original(_this, a2, x, a4);
+    virtual void execute(CommandOrigin const& ori, CommandOutput& outp) const
+    {
+        Player* player = (Player*)ori.getEntity();
+        if (!op_isSet) {
+            CmdBackup(player);
+        }
+        switch (op)
+        {
+        case reload:
+            CmdReloadConfig(player);
+            break;
+        case cancel:
+            CmdCancel(player);
+            break;
+        default:
+            Logger::Warn("未知操作！");
+        }
+    }
+public:
+    static void setup(CommandRegistry* registry) {
+        registry->registerCommand(
+            "backup", "Create a backup", CommandPermissionLevel::GameMasters, { (CommandFlagValue)0 },
+            { (CommandFlagValue)0x80 });
+        registry->addEnum<BackupOP>("operation",
+            {
+                    {"cancel", cancel},
+                    {"reload", reload},
+            });
+        registry->registerOverload<BackupCommand>(
+            "plugins",
+            makeOptional<CommandParameterDataType::ENUM>(&BackupCommand::op, "operation", "operation", &BackupCommand::op_isSet));
+    }
+};
 
-    if (cmd == "backup reload")
-    {
-        CmdReloadConfig(player);
-        return false;
-    }
-    else if (cmd == "backup")
-    {
-        CmdBackup(player);
-        return false;
-    }
-    else if (cmd == "backup cancel")
-    {
-        CmdCancel(player);
-        return false;
-    }
-    return original(_this, a2, x, a4);
+void registryCommand(CommandRegistry* registry) {
+    BackupCommand::setup(registry);
 }
