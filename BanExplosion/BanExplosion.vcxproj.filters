@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Lib">
+      <UniqueIdentifier>{6afb90bc-96d5-49ac-bc25-1d137c1e09d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -34,6 +37,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="lib\LiteLoader.lib" />
+    <Library Include="..\Lib\LiteLoader.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\Lib\SymDBHelper.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\Lib\bedrock_server_api.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\Lib\bedrock_server_var.lib">
+      <Filter>Lib</Filter>
+    </Library>
   </ItemGroup>
 </Project>

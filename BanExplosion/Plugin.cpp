@@ -1,24 +1,20 @@
 #include "pch.h"
-#include "headers/lbpch.h"
-#include "headers/mc/OffsetHelper.h"
-#include "headers/api/commands.h"
-#include "headers/loader/Loader.h"
+#include "../Header/Global.h"
+#include "../Header/LLAPI.h"
+#include "../Header/MC/Player.hpp"
+#include "../Header/MC/Level.hpp"
+#include "../Header/EventAPI.h"
+#include "../Header/RegCommandAPI.h"
 #include <string>
 #include "SimpleIni.h"
+
+using namespace RegisterCommandHelper;
 using namespace std;
 
 #define _VER "1.5.3"
 #define _CONF_PATH "plugins/BanExplosion/config.ini"
 
 CSimpleIniA ini;
-
-//Utils
-std::string Raw_GetEntityTypeName(Actor* actor)
-{
-    return SymCall("?EntityTypeToString@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4ActorType@@W4ActorTypeNamespaceRules@@@Z",
-        string, int, int)
-        (actor->getEntityTypeId(), 1);
-}
 
 // 防爆
 bool suspend = false;
@@ -32,7 +28,7 @@ THook(void, "?explode@Level@@UEAAXAEAVBlockSource@@PEAVActor@@AEBVVec3@@M_N3M3@Z
         if (actor)
         {
             //常规
-            string name = Raw_GetEntityTypeName(actor);
+            string name = actor->getTypeName();
             if (ini.GetBoolValue(name.c_str(), "NoExplosion"))
                 return;
             if (ini.GetBoolValue(name.c_str(), "NoDestroyBlock"))
@@ -80,11 +76,6 @@ THook(bool, "?canDestroy@WitherBoss@@SA_NAEBVBlock@@@Z",
 
 
 // 命令
-enum EXPOP :int {
-    off = 1,
-    on = 2,
-    reload = 3
-};
 
 bool ReloadIni()
 {
@@ -92,31 +83,51 @@ bool ReloadIni()
     return ini.LoadFile(_CONF_PATH) == 0;
 }
 
-bool ChangeExpRule(CommandOrigin const& ori, CommandOutput& outp, MyEnum<EXPOP> op)
-{
-    switch (op)
-    {
-    case off:
-        suspend = true;
-        cout << "=== 自定义防爆规则已临时关闭 ===" << endl;
-        break;
-    case on:
-        suspend = false;
-        cout << "=== 自定义防爆规则已启用 ===" << endl;
-        break;
-    case reload:
-        if (ReloadIni())
-            cout << "配置文件已重新加载。" << endl;
-        else
-            cout << "配置文件解析失败！插件将不会正常工作" << endl;
-        break;
-    default:
-        cout << "未知操作！" << endl;
-        return false;
-    }
-    return true;
-}
+class BanExplodeCommand : public Command {
+    enum EXPOP :int {
+        off = 1,
+        on = 2,
+        reload = 3
+    } op;
 
+    virtual void execute(CommandOrigin const& ori, CommandOutput& outp) const
+    {
+        switch (op)
+        {
+        case off:
+            suspend = true;
+            Logger::Info("=== 自定义防爆规则已临时关闭 ===");
+            break;
+        case on:
+            suspend = false;
+            Logger::Info("=== 自定义防爆规则已启用 ===");
+            break;
+        case reload:
+            if (ReloadIni())
+                Logger::Info("配置文件已重新加载。");
+            else
+                Logger::Error("配置文件解析失败！插件将不会正常工作");
+            break;
+        default:
+            Logger::Warn("未知操作！");
+        }
+    }
+public:
+    static void setup(CommandRegistry* registry) {
+        registry->registerCommand(
+            "banexp", "Control custom explosion rule", CommandPermissionLevel::GameMasters, { (CommandFlagValue)0 },
+            { (CommandFlagValue)0x80 });
+        registry->addEnum<EXPOP>("operation",
+            {
+                    {"off", off},
+                    {"on", on},
+                    {"reload", reload},
+            });
+        registry->registerOverload<BanExplodeCommand>(
+            "plugins",
+            makeMandatory<CommandParameterDataType::ENUM>(&BanExplodeCommand::op, "operation", "operation"));
+    }
+};
 
 // Main
 
@@ -126,21 +137,18 @@ void entry()
     auto res = ini.LoadFile(_CONF_PATH);
     if (res < 0)
     {
-        cerr << "[BanExplosion] 防爆插件加载配置文件失败！" << endl;
-        cerr << "[BanExplosion] 插件将不会正常工作。" << endl;
+        Logger::Error("防爆插件加载配置文件失败！");
+        Logger::Error("插件将不会正常工作。");
         return;
     }
 
-    Event::addEventListener([](RegCmdEV ev)
+    Event::RegCmdEvent::subscribe([](Event::RegCmdEvent ev)
     {
-        CMDREG::SetCommandRegistry(ev.CMDRg);
-        MakeCommand("banexp", "Control custom explosion rule", 4);
-        CEnum<EXPOP> _1("operation", { "off","on","reload" });
-        CmdOverload(banexp, ChangeExpRule, "operation");
+            BanExplodeCommand::setup(ev.mCommandRegistry);
+            return true;
     });
-
-    std::cout << "[BanExplosion] BanExplosion自定义防爆插件-已装载  当前版本：" << _VER << endl;
-    std::cout << "[BanExplosion] 配置文件位于：" << _CONF_PATH << endl;
-    std::cout << "[BanExplosion] 作者：yqs112358   首发平台：MineBBS" << endl;
-    std::cout << "[BanExplosion] 欲联系作者可前往MineBBS论坛" << endl;
+    Logger::Info("BanExplosion自定义防爆插件-已装载  当前版本：{}", _VER);
+    Logger::Info("配置文件位于：{}", _CONF_PATH);
+    Logger::Info("作者：yqs112358   首发平台：MineBBS");
+    Logger::Info("欲联系作者可前往MineBBS论坛");
 }
