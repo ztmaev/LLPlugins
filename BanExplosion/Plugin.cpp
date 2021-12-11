@@ -84,25 +84,25 @@ bool ReloadIni()
 }
 
 class BanExplodeCommand : public Command {
-    enum EXPOP :int {
-        off = 1,
-        on = 2,
-        reload = 3
+    enum class EXPOP :int {
+        off,
+        on,
+        reload,
     } op;
 
     virtual void execute(CommandOrigin const& ori, CommandOutput& outp) const
     {
         switch (op)
         {
-        case off:
+        case EXPOP::off:
             suspend = true;
             Logger::Info("=== 自定义防爆规则已临时关闭 ===");
             break;
-        case on:
+        case EXPOP::on:
             suspend = false;
             Logger::Info("=== 自定义防爆规则已启用 ===");
             break;
-        case reload:
+        case EXPOP::reload:
             if (ReloadIni())
                 Logger::Info("配置文件已重新加载。");
             else
@@ -117,15 +117,15 @@ public:
         registry->registerCommand(
             "banexp", "Control custom explosion rule", CommandPermissionLevel::GameMasters, { (CommandFlagValue)0 },
             { (CommandFlagValue)0x80 });
-        registry->addEnum<EXPOP>("operation",
+        registry->addEnum<EXPOP>("Operation",
             {
-                    {"off", off},
-                    {"on", on},
-                    {"reload", reload},
+                    {"off", EXPOP::off},
+                    {"on", EXPOP::on},
+                    {"reload", EXPOP::reload},
             });
         registry->registerOverload<BanExplodeCommand>(
-            "plugins",
-            makeMandatory<CommandParameterDataType::ENUM>(&BanExplodeCommand::op, "operation", "operation"));
+            "banexp",
+            makeMandatory<CommandParameterDataType::ENUM>(&BanExplodeCommand::op, "operation", "Operation"));
     }
 };
 

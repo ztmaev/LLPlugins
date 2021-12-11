@@ -53,7 +53,7 @@ THook(bool, "??$inner_enqueue@$0A@AEBV?$basic_string@DU?$char_traits@D@std@@V?$a
 {
     if (cmd.front() == '/')
         cmd = cmd.substr(1);
-    if (!cmd.empty() && cmd == "stop" && !isStopping)
+    if (!cmd.empty() && cmd == "stop" && !isStopping && isServerStarted)
     {
         SafeStop();
         return false;

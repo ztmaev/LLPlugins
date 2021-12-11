@@ -244,7 +244,7 @@ void ResumeBackup()
 {
     try
     {
-        auto res = Level::runcmdEx("save resume");
+        std::pair<bool, string> res = Level::runcmdEx("save resume");
         if (!res.first)
         {
             SendFeedback(nowPlayer, "Failed to resume backup snapshot!");

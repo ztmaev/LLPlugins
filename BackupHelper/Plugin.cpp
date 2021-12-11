@@ -1,7 +1,7 @@
 #include "pch.h"
 #include <filesystem>
 #include "ConfigFile.h"
-#include "Command.h"
+#include "BackupCommand.h"
 #include "Backup.h"
 #include "Tools.h"
 #include "i18n.h"
@@ -72,7 +72,13 @@ void entry()
         filesystem::remove("plugins/BackupHelper/BackupRunner.exe");
 
     Event::RegCmdEvent::subscribe([](Event::RegCmdEvent e) {
-        registryCommand(e.mCommandRegistry);
+
+#ifdef LEGACY_COMMAND
+        //e.mCommandRegistry->registerCommand("backup", "Create a backup", CommandPermissionLevel::GameMasters, { (CommandFlagValue)0 },
+        //    { (CommandFlagValue)0x80 });
+#else
+        BackupCommand::setup(e.mCommandRegistry);
+#endif
         return true;
     });
 }

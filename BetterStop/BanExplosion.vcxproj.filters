@@ -43,5 +43,11 @@
     <Library Include="..\Lib\SymDBHelper.lib">
       <Filter>Lib</Filter>
     </Library>
+    <Library Include="..\Lib\bedrock_server_api.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\Lib\bedrock_server_var.lib">
+      <Filter>Lib</Filter>
+    </Library>
   </ItemGroup>
 </Project>

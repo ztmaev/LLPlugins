@@ -14,10 +14,8 @@
 #include "../Header/MC/Player.hpp"
 #include "../Header/MC/Level.hpp"
 #include "../Header/EventAPI.h"
-#include "../Header/RegCommandAPI.h"
 #include <string>
 #include <vector>
-#include <windows.h>
 #include <iostream>
 #include <ctime>
 

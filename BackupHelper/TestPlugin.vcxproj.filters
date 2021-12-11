@@ -36,7 +36,7 @@
     <ClInclude Include="Tools.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Command.h">
+    <ClInclude Include="BackupCommand.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,7 +50,7 @@
     <ClCompile Include="Plugin.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Command.cpp">
+    <ClCompile Include="BackupCommand.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Backup.cpp">
@@ -61,16 +61,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Lib\LiteLoader.lib">
-      <Filter>Lib</Filter>
-    </Library>
-    <Library Include="..\Lib\SymDBHelper.lib">
-      <Filter>Lib</Filter>
-    </Library>
     <Library Include="..\Lib\bedrock_server_api.lib">
       <Filter>Lib</Filter>
     </Library>
     <Library Include="..\Lib\bedrock_server_var.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\Lib\LiteLoader.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\Lib\SymDBHelper.lib">
       <Filter>Lib</Filter>
     </Library>
   </ItemGroup>

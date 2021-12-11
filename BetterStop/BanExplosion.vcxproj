@@ -83,7 +83,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)Header;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -154,11 +154,12 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <DelayLoadDLLs>bedrock_server.dll</DelayLoadDLLs>
     </Link>
     <PreBuildEvent>
       <Command>
-				if not exist $(ProjectDir)Lib\bedrock_server_api.lib goto process
-				if not exist $(ProjectDir)Lib\bedrock_server_var.lib goto process
+				if not exist $(ProjectDir)..\Lib\bedrock_server_api.lib goto process
+				if not exist $(ProjectDir)..\Lib\bedrock_server_var.lib goto process
 				goto end
 
 				:process
@@ -168,6 +169,11 @@
 				:end
 			</Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>if exist $(LocalDebuggerWorkingDirectory)\plugins\ (
+copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
+)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
@@ -184,6 +190,8 @@
     <ClCompile Include="Plugin.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="..\Lib\bedrock_server_api.lib" />
+    <Library Include="..\Lib\bedrock_server_var.lib" />
     <Library Include="..\Lib\LiteLoader.lib" />
     <Library Include="..\Lib\SymDBHelper.lib" />
   </ItemGroup>
