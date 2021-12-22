@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <libcron/Cron.h>
-#include <ctime>
+#include <MC/Level.hpp>
+#include <ScheduleAPI.h>
 #include <queue>
 #include <string>
 #include <windows.h> 
@@ -24,8 +25,8 @@ THook(void, "?tick@ServerLevel@@UEAAXXZ",
 bool AddSchedule(string cmd, string cronStr)
 {
     cron.add_schedule(cmd + to_string(++taskid), cronStr, [cmd](auto&) {
-        Handler::scheduleNext([cmd]() {
-            liteloader::runcmd(cmd);
+        Schedule::nextTick([cmd]() {
+            Level::runcmd(cmd);
         });
     });
     return true;

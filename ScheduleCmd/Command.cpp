@@ -1,6 +1,8 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Scheduler.h"
 #include "ConfigFile.h"
+#include <Global.h>
+#include <EventAPI.h>
 using namespace std;
 
 // Helper
@@ -94,72 +96,71 @@ bool CmdRemoveSchedule(const string& cmd)
 
 #define FAIL_END(e) { cout << e << endl; return false; }
 
-THook(bool, "?executeCommand@MinecraftCommands@@QEBA?AUMCRESULT@@V?$shared_ptr@VCommandContext@@@std@@_N@Z",
-    MinecraftCommands* _this, unsigned int* a2, std::shared_ptr<CommandContext> x, char a4)
+
+void RegisterCmdProcess()
 {
-    Player* player = (Player*)MakeSP(x->getOrigin());
-    string cmd = x->getCmd();
-    if (cmd.front() == '/')
-        cmd = cmd.substr(1);
-    if (!cmd.empty() && !player && cmd.substr(0,11) == "schedulecmd")
+    Event::ConsoleCmdEvent::subscribe([](const Event::ConsoleCmdEvent& ev)
     {
-        auto paras = SplitCmdParas(cmd.substr(12));
-        if (!paras.empty())
+        if(ev.mCommand.substr(0, 11) == "schedulecmd")
         {
-            if (paras[0] == "add")
+            auto paras = SplitCmdParas(ev.mCommand.substr(12));
+            if (!paras.empty())
             {
-                if (paras.size() == 8)
+                if (paras[0] == "add")
                 {
-                    //add backup * * * * * *
-                    CmdAddSchedule(paras[1], paras[2] + " " + paras[3] + " " + paras[4] + " " + paras[5] + " " + paras[6] + " " + paras[7]);
-                }
-                else if (paras.size() == 3)
-                {
-                    if (paras[2].find(":") != string::npos)
+                    if (paras.size() == 8)
                     {
-                        auto times = SplitWithSymbol(paras[2], ":");
-                        char str[20] = { 0 };
-                        if (times.size() == 3)
+                        //add backup * * * * * *
+                        CmdAddSchedule(paras[1], paras[2] + " " + paras[3] + " " + paras[4] + " " + paras[5] + " " + paras[6] + " " + paras[7]);
+                    }
+                    else if (paras.size() == 3)
+                    {
+                        if (paras[2].find(":") != string::npos)
                         {
-                            //add backup 12:34:00
-                            sprintf_s(str, "%s %s %s * * ?", times[2].c_str(), times[1].c_str(), times[0].c_str());
-                            CmdAddSchedule(paras[1], string(str));
-                        }
-                        else if (times.size() == 2)
-                        {
-                            //add backup 12:34
-                            sprintf_s(str, "0 %s %s * * ?", times[1].c_str(), times[0].c_str());
-                            CmdAddSchedule(paras[1], string(str));
+                            auto times = SplitWithSymbol(paras[2], ":");
+                            char str[20] = { 0 };
+                            if (times.size() == 3)
+                            {
+                                //add backup 12:34:00
+                                sprintf_s(str, "%s %s %s * * ?", times[2].c_str(), times[1].c_str(), times[0].c_str());
+                                CmdAddSchedule(paras[1], string(str));
+                            }
+                            else if (times.size() == 2)
+                            {
+                                //add backup 12:34
+                                sprintf_s(str, "0 %s %s * * ?", times[1].c_str(), times[0].c_str());
+                                CmdAddSchedule(paras[1], string(str));
+                            }
+                            else
+                                FAIL_END("命令执行失败！参数格式错误");
                         }
                         else
                             FAIL_END("命令执行失败！参数格式错误");
                     }
                     else
-                        FAIL_END("命令执行失败！参数格式错误");
+                        FAIL_END("命令执行失败！参数数量错误");
                 }
-                else
-                    FAIL_END("命令执行失败！参数数量错误");
-            }
-            else if (paras[0] == "remove")
-            {
-                if (paras.size() == 2)
+                else if (paras[0] == "remove")
                 {
-                    //remove backup
-                    CmdRemoveSchedule(paras[1]);
+                    if (paras.size() == 2)
+                    {
+                        //remove backup
+                        CmdRemoveSchedule(paras[1]);
+                    }
+                    else
+                        FAIL_END("命令执行失败！参数数量错误");
+                }
+                else if (paras[0] == "reload")
+                {
+                    RemoveAllSchedule();
+                    LoadConfigFile(CONFIG_PATH);
+                    cout << "配置文件已重新加载" << endl;
                 }
                 else
-                    FAIL_END("命令执行失败！参数数量错误");
+                    FAIL_END("命令执行失败！不存在此操作");
             }
-            else if (paras[0] == "reload")
-            {
-                RemoveAllSchedule();
-                LoadConfigFile(CONFIG_PATH);
-                cout << "配置文件已重新加载" << endl;
-            }
-            else
-                FAIL_END("命令执行失败！不存在此操作");
+            return false;
         }
-        return false;
-    }
-    return original(_this, a2, x, a4);
+        return true;
+    });
 }

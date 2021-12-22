@@ -8,15 +8,8 @@
 #define PCH_H
 
 // 添加要在此处预编译的标头
-#include <iostream>
-#include "headers/lbpch.h"
-#include "headers/api/commands.h"
-//#include "headers/api/Basic_Event.h"
-#include "headers/api/scheduler/scheduler.h"
-#include <string>
-#include <vector>
-#include <windows.h>
-#include <iostream>
-#include <ctime>
+#include <LoggerAPI.h>
+
+extern Logger logger;
 
 #endif //PCH_H

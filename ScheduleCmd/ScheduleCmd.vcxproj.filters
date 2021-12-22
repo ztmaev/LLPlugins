@@ -35,9 +35,6 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Plugin.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -52,7 +49,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="lib\LiteLoader.lib" />
     <Library Include="lib\libcron.lib" />
+    <Library Include="..\SDK\Lib\SymDBHelper.lib" />
   </ItemGroup>
 </Project>
