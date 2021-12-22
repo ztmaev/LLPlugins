@@ -10,7 +10,6 @@
 #include "SimpleIni.h"
 using namespace std;
 
-#define _VER "1.0.0"
 #define _CONF_PATH "plugins/BetterStop/config.ini"
 
 CSimpleIniA ini;
@@ -18,6 +17,7 @@ bool isStopping = false;
 bool isServerStarted = false;
 
 Logger logger("SafeStop");
+LL::Version ver(2, 0, 1);
 
 //Utils
 
@@ -87,6 +87,9 @@ BOOL CtrlHandler(DWORD fdwCtrlType)
 //Main
 void entry(HMODULE hMod)
 {
+    LL::registerPlugin("BetterStop", "Have a better and safer \"stop\" command.", ver, {
+        {"GitHub","https://github.com/yqs112358/LLPlugins"} });
+
     if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE))
         logger.info("Fail to enable Console Close Protection!");
 
@@ -104,5 +107,5 @@ void entry(HMODULE hMod)
 
     ini.SetUnicode(true);
     auto res = ini.LoadFile(_CONF_PATH);
-    logger.info("BetterStop 关服保护插件-已装载  当前版本：{}", _VER);
+    logger.info("BetterStop 关服保护插件-已装载  当前版本：{}", ver.toString());
 }

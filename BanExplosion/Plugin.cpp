@@ -11,20 +11,28 @@
 using namespace RegisterCommandHelper;
 using namespace std;
 
-#define _VER "1.5.4"
 #define _CONF_PATH "plugins/BanExplosion/config.ini"
 
 CSimpleIniA ini;
 
 Logger logger("BanExplosion");
+LL::Version ver(1, 5, 5);
 
 // 防爆
 bool suspend = false;
 
 // ===== onExplode & onBedExplode =====
-THook(void, "?explode@Level@@UEAAXAEAVBlockSource@@PEAVActor@@AEBVVec3@@M_N3M3@Z",
-    Level* _this, BlockSource* bs, Actor* actor, Vec3* pos, float power, bool isFire, bool isDestroy, float range, bool a9)
+THook(void, "?explode@Explosion@@QEAAXXZ",
+    void* self)
 {
+    auto actor = (Actor*)*((QWORD*)self + 11);
+    //auto pos = *(Vec3*)(QWORD*)self;
+    //auto radius = *((float*)self + 3);
+    //auto bs = (BlockSource*)*((QWORD*)self + 12);
+    //auto maxResistance = *((float*)self + 26);
+    //auto genFire = (bool)*((BYTE*)self + 80);
+    //auto canBreaking = (bool)*((BYTE*)self + 81);
+
     if (!suspend)
     {
         if (actor)
@@ -34,7 +42,7 @@ THook(void, "?explode@Level@@UEAAXAEAVBlockSource@@PEAVActor@@AEBVVec3@@M_N3M3@Z
             if (ini.GetBoolValue(name.c_str(), "NoExplosion"))
                 return;
             if (ini.GetBoolValue(name.c_str(), "NoDestroyBlock"))
-                isDestroy = false;
+                *((BYTE*)self + 81) = false;
         }
         else
         {
@@ -42,42 +50,14 @@ THook(void, "?explode@Level@@UEAAXAEAVBlockSource@@PEAVActor@@AEBVVec3@@M_N3M3@Z
             if (ini.GetBoolValue("minecraft:bed", "NoExplosion"))
                 return;
             if (ini.GetBoolValue("minecraft:bed", "NoDestroyBlock"))
-                isDestroy = false;
+                *((BYTE*)self + 81) = false;
         }
     }
-    original(_this, bs, actor, pos, power, isFire, isDestroy, range, a9);
-}
-
-// ===== onRespawnAnchorExplode =====
-THook(void, "?explode@RespawnAnchorBlock@@CAXAEAVPlayer@@AEBVBlockPos@@AEAVBlockSource@@AEAVLevel@@@Z",
-    void* _this, Player* pl, BlockPos* bp, BlockSource* bs, Level* level)
-{
-    if (!suspend && ini.GetBoolValue("minecraft:respawn_anchor", "NoExplosion"))
-        return;
-    return original(_this, pl, bp, bs, level);
-}
-
-// ===== onWitherBossDestroy =====
-THook(void, "?_destroyBlocks@WitherBoss@@AEAAXAEAVLevel@@AEBVAABB@@AEAVBlockSource@@H@Z",
-    void* _this, Level* a2, AABB* a3, BlockSource* a4, int a5)
-{
-    if (ini.GetBoolValue("minecraft:wither", "NoDestroyBlock"))
-        return;
-    original(_this, a2, a3, a4, a5);
-}
-
-// ===== onWitherBossDestroy =====
-THook(bool, "?canDestroy@WitherBoss@@SA_NAEBVBlock@@@Z",
-    Block *bl)
-{
-    if (ini.GetBoolValue("minecraft:wither", "NoDestroyBlock"))
-        return false;
-    return original(bl);
+    original(self);
 }
 
 
-
-// 命令
+// Command
 
 bool ReloadIni()
 {
@@ -135,6 +115,9 @@ public:
 
 void entry()
 {
+    LL::registerPlugin("BanExplosion", "Customize your explosion destroy rule!", ver, {
+        {"GitHub","https://github.com/yqs112358/LLPlugins"} });
+
     ini.SetUnicode(true);
     auto res = ini.LoadFile(_CONF_PATH);
     if (res < 0)
@@ -144,12 +127,25 @@ void entry()
         return;
     }
 
+    Event::PlayerUseRespawnAnchorEvent::subscribe([](const Event::PlayerUseRespawnAnchorEvent &ev) {
+        if (!suspend && ini.GetBoolValue("minecraft:respawn_anchor", "NoExplosion"))
+            return false;
+        return true;
+    });
+
+    Event::WitherBossDestroyEvent::subscribe([](const Event::WitherBossDestroyEvent &ev) {
+        if (!suspend && ini.GetBoolValue("minecraft:wither", "NoDestroyBlock"))
+            return false;
+        return true;
+    });
+
     Event::RegCmdEvent::subscribe([](Event::RegCmdEvent ev)
     {
             BanExplodeCommand::setup(ev.mCommandRegistry);
             return true;
     });
-    logger.info("BanExplosion自定义防爆插件-已装载  当前版本：{}", _VER);
+
+    logger.info("BanExplosion自定义防爆插件-已装载  当前版本：{}", ver.toString());
     logger.info("配置文件位于：{}", _CONF_PATH);
     logger.info("作者：yqs112358   首发平台：MineBBS");
     logger.info("欲联系作者可前往MineBBS论坛");

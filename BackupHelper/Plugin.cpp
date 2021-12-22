@@ -2,12 +2,12 @@
 #include <filesystem>
 #include "ConfigFile.h"
 #include "BackupCommand.h"
+#include <TranslationAPI.h>
 #include "Backup.h"
 #include "Tools.h"
-#include "i18n.h"
 using namespace std;
 
-#define _VER "2.0.3"
+LL::Version ver(2, 0, 5);
 CSimpleIniA ini;
 
 Logger logger("BackupHelper");
@@ -57,11 +57,14 @@ void entry()
 {
     _set_se_translator(seh_exception::TranslateSEHtoCE);
 
+    LL::registerPlugin("BackupHelper", "One command to backup your level", ver, {
+        {"GitHub","https://github.com/yqs112358/LLPlugins"} });
+
     Raw_IniOpen(_CONFIG_FILE,"");
-    InitI18n(string("plugins/BackupHelper/LangPack/") + ini.GetValue("Main", "Language", "en_US") + ".json");
+    Translation::load(string("plugins/BackupHelper/LangPack/") + ini.GetValue("Main", "Language", "en_US") + ".json");
 
     
-	logger.info("BackupHelper存档备份助手-已装载  当前版本：{}", _VER);
+	logger.info("BackupHelper存档备份助手-已装载  当前版本：{}", ver.toString());
     logger.info("OP/后台命令： backup 开始备份");
     logger.info("OP/后台命令： backup reload 重新加载配置文件");
     logger.info("作者：yqs112358   首发平台：MineBBS");
