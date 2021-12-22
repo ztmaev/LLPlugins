@@ -36,7 +36,7 @@ bool FlushConfigFile()
     }
     else
     {
-        cout << "[ScheduleCmd][ERROR] 配置文件写入失败！" << endl;
+        logger.info << "[ScheduleCmd][ERROR] 配置文件写入失败！" << logger.endl;
         return false;
     }
 }
@@ -69,14 +69,14 @@ bool LoadConfigFile(const string& path)
         fout << "{}" << flush;
         fout.close();
 
-		cout << "[ScheduleCmd] 配置文件不存在！已自动创建。" << endl;
+        logger.info << "[ScheduleCmd] 配置文件不存在！已自动创建。" << logger.endl;
 		return false;
 	}
 
     string confData;
     if (!FileReadFrom(path, confData))
     {
-        cout << "[ScheduleCmd][ERROR] 配置文件读取失败！" << endl;
+        logger.info << "[ScheduleCmd][ERROR] 配置文件读取失败！" << logger.endl;
         conf = json::object();
         return false;
     }
@@ -89,7 +89,7 @@ bool LoadConfigFile(const string& path)
     }
     catch (exception& e)
     {
-        cout << "[ScheduleCmd][Warning] 配置文件解析失败！\n" << e.what() << endl;
+        logger.info << "[ScheduleCmd][Warning] 配置文件解析失败！\n" << e.what() << logger.endl;
         conf = json::object();
         return false;
     }
@@ -98,7 +98,7 @@ bool LoadConfigFile(const string& path)
     {
         if (!AddSchedule(key, value))
         {
-            cout << "[ScheduleCmd][ERROR] 计划命令项 " << key << " 解析失败！" << endl;
+            logger.info << "[ScheduleCmd][ERROR] 计划命令项 " << key << " 解析失败！" << logger.endl;
         }
     }
     return true;

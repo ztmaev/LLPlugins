@@ -69,12 +69,12 @@ bool CmdAddSchedule(const string& cmd, const string& cronStr)
 {
     if (AddSchedule(cmd, cronStr) && ConfAddSchedule(cmd,cronStr))
     {
-        cout << "计划命令已成功添加。" << endl;
+        logger.info << "计划命令已成功添加。" << logger.endl;
         return true;
     }
     else
     {
-        cout << "计划命令添加失败！" << endl;
+        logger.info << "计划命令添加失败！" << logger.endl;
         return false;
     }
 }
@@ -83,12 +83,12 @@ bool CmdRemoveSchedule(const string& cmd)
 {
     if(RemoveSchedule(cmd) && ConfRemoveSchedule(cmd))
     {
-        cout << "计划命令已删除。" << endl;
+        logger.info << "计划命令已删除。" << logger.endl;
         return true;
     }
     else
     {
-        cout << "计划命令删除失败！此命令无计划进行中" << endl;
+        logger.info << "计划命令删除失败！此命令无计划进行中" << logger.endl;
         return false;
     }
 }
@@ -154,7 +154,7 @@ void RegisterCmdProcess()
                 {
                     RemoveAllSchedule();
                     LoadConfigFile(CONFIG_PATH);
-                    cout << "配置文件已重新加载" << endl;
+                    logger.info << "配置文件已重新加载" << logger.endl;
                 }
                 else
                     FAIL_END("命令执行失败！不存在此操作");

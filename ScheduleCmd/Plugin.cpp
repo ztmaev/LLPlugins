@@ -2,6 +2,7 @@
 #include "ConfigFile.h"
 #include <EventAPI.h>
 #include <Global.h>
+#include <MC/ServerPlayer.hpp>
 using namespace std;
 
 class CommandRegistry;
@@ -23,13 +24,13 @@ void entry()
     LL::registerPlugin("ScheduleCmd", "Schedule your command execute in language of crontab", ver, {
         {"GitHub","https://github.com/yqs112358/LLPlugins"} });
 
-    std::cout << u8"[ScheduleCmd] ScheduleCmd 计划命令已加载！" << endl;
-    std::cout << u8"[ScheduleCmd] 配置文件位于：plugins/ScheduleCmd/schedule.json" << endl;
-    std::cout << u8"[ScheduleCmd] 在后台使用 /schedule 命令来设置命令定时执行计划" << endl;
+    logger.info << u8"ScheduleCmd 计划命令已加载！" << logger.endl;
+    logger.info << u8"配置文件位于：plugins/ScheduleCmd/schedule.json" << logger.endl;
+    logger.info << u8"在后台使用 /schedule 命令来设置命令定时执行计划" << logger.endl;
 
     Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent& ev) {
         LoadConfigFile(CONFIG_PATH);
-        std::cout << u8"[ScheduleCmd] 计划命令系统已开始计时" << endl;
+        logger.info << u8"计划命令系统已开始计时" << logger.endl;
         return true;
     });
 
