@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Lib">
+      <UniqueIdentifier>{3482784e-ac57-4ecc-8ccb-218a334565c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -33,6 +36,9 @@
     <ClInclude Include="Tools.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BackupCommand.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -44,7 +50,7 @@
     <ClCompile Include="Plugin.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Command.cpp">
+    <ClCompile Include="BackupCommand.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Backup.cpp">
@@ -55,6 +61,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="lib\LiteLoader.lib" />
+    <Library Include="..\Lib\bedrock_server_api.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\Lib\bedrock_server_var.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\Lib\LiteLoader.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\Lib\SymDBHelper.lib">
+      <Filter>Lib</Filter>
+    </Library>
   </ItemGroup>
 </Project>

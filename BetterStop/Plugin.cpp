@@ -1,7 +1,9 @@
 #include "pch.h"
-#include "headers/lbpch.h"
-#include "headers/mc/OffsetHelper.h"
-//#include "headers/api/Basic_Event.h"
+#include "../Header/Global.h"
+#include "../Header/LLAPI.h"
+#include "../Header/MC/Player.hpp"
+#include "../Header/MC/Level.hpp"
+#include "../Header/EventAPI.h"
 #include <string>
 #include <Windows.h>
 #include <stdlib.h>
@@ -14,7 +16,6 @@ using namespace std;
 CSimpleIniA ini;
 bool isStopping = false;
 bool isServerStarted = false;
-Minecraft* mc;
 
 //Utils
 
@@ -22,30 +23,11 @@ vector<Player*> Raw_GetOnlinePlayers()
 {
     vector<Player*> pls;
     if (isServerStarted)
-        pls = liteloader::getAllPlayers();
+        pls = Level::getAllPlayers();
 
     return pls;
 }
 
-bool Raw_KickPlayer(Player* player, const string& msg)
-{
-    auto nh = mc->getServerNetworkHandler();
-    NetworkIdentifier* a = offPlayer::getNetworkIdentifier(player);
-    nh->disconnectClient(*(NetworkIdentifier*)a, msg, 0);
-    return true;
-}
-
-bool Raw_Runcmd(const string& cmd)
-{
-    return liteloader::runcmd(cmd);
-}
-
-THook(void, "?initAsDedicatedServer@Minecraft@@QEAAXXZ",
-    void* self)
-{
-    original(self);
-    mc = (Minecraft*)self;
-}
 
 
 // Main
@@ -56,22 +38,22 @@ void SafeStop()
         return;
     isStopping = true;
 
-    cout << "[BetterStop] Safe Stop processing..." << endl;
+    Logger::Info("Safe Stop processing...");
     auto players = Raw_GetOnlinePlayers();
     for (auto& pl : players)
     {
-        Raw_KickPlayer(pl, string(ini.GetValue("Main", "StopMsg", "Server stopping...")));
+        pl->kick(string(ini.GetValue("Main", "StopMsg", "Server stopping...")));
     }
-    Raw_Runcmd("stop");
+    Level::runcmd("stop");
 }
 
 // ===== onConsoleCmd =====
 THook(bool, "??$inner_enqueue@$0A@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$SPSCQueue@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@$0CAA@@@AEAA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
-    void* _this, string &cmd)
+    void* _this, std::string &cmd)
 {
     if (cmd.front() == '/')
         cmd = cmd.substr(1);
-    if (!cmd.empty() && cmd == "stop" && !isStopping)
+    if (!cmd.empty() && cmd == "stop" && !isStopping && isServerStarted)
     {
         SafeStop();
         return false;
@@ -87,7 +69,7 @@ BOOL CtrlHandler(DWORD fdwCtrlType)
     case CTRL_C_EVENT:
     case CTRL_CLOSE_EVENT:
     case CTRL_SHUTDOWN_EVENT:
-        cout << "[BetterStop] Stop detected." << endl;
+        Logger::Info("Stop detected.");
         SafeStop();
         return TRUE;
 
@@ -104,7 +86,7 @@ BOOL CtrlHandler(DWORD fdwCtrlType)
 void entry(HMODULE hMod)
 {
     if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE))
-        cerr << "[BetterStop] Fail to enable Console Close Protection!" << endl;
+        Logger::Error("Fail to enable Console Close Protection!");
 
     HWND hwnd = GetConsoleWindow();
     HMENU hmenu = GetSystemMenu(hwnd, false);
@@ -112,13 +94,13 @@ void entry(HMODULE hMod)
     DestroyMenu(hmenu);
     ReleaseDC(hwnd, NULL);
 
-    Event::addEventListener([](ServerStartedEV ev)
+    Event::ServerStartedEvent::subscribe([](Event::ServerStartedEvent ev)
     {
         isServerStarted = true;
+        return true;
     });
 
     ini.SetUnicode(true);
     auto res = ini.LoadFile(_CONF_PATH);
-
-    std::cout << "[BetterStop] BetterStop 关服保护插件-已装载  当前版本：" << _VER << endl;
+    Logger::Info("BetterStop 关服保护插件-已装载  当前版本：{}", _VER);
 }

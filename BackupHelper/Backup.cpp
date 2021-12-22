@@ -41,7 +41,7 @@ void ControlResourceUsage(HANDLE process)
 {
     //Job
     HANDLE hJob = CreateJobObject(NULL, L"BACKUP_HELPER_HELP_PROGRAM");
-    if (hJob > 0)
+    if (hJob)
     {
         JOBOBJECT_BASIC_LIMIT_INFORMATION limit = { 0 };
         limit.PriorityClass = BELOW_NORMAL_PRIORITY_CLASS;
@@ -235,7 +235,7 @@ bool StartBackup()
     ClearOldBackup();
     try
     {
-        liteloader::runcmd("save hold");
+        Level::runcmd("save hold");
     }
     catch(const seh_exception &e)
     {
@@ -253,7 +253,7 @@ void ResumeBackup()
 {
     try
     {
-        auto res = liteloader::runcmdEx("save resume");
+        std::pair<bool, string> res = Level::runcmdEx("save resume");
         if (!res.first)
         {
             SendFeedback(nowPlayer, "Failed to resume backup snapshot!");
