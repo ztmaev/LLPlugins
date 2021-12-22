@@ -185,7 +185,6 @@ LibraryBuilder.exe -o ..\Lib\
     <ClInclude Include="BackupCommand.h" />
     <ClInclude Include="ConfigFile.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="i18n.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Tools.h" />
   </ItemGroup>
@@ -193,7 +192,6 @@ LibraryBuilder.exe -o ..\Lib\
     <ClCompile Include="Backup.cpp" />
     <ClCompile Include="BackupCommand.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="i18n.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

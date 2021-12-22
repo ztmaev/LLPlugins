@@ -27,9 +27,6 @@
     <ClInclude Include="Backup.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="i18n.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Tools.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -51,9 +48,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Backup.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="i18n.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

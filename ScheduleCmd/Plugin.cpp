@@ -16,16 +16,20 @@ bool RegisterCmd(CommandRegistry *reg, const string& cmd, const string& describe
 void RegisterCmdProcess();
 
 Logger logger("ScheduleCmd");
+LL::Version ver(1, 1, 0);
 
 void entry()
 {
-    std::cout << "[ScheduleCmd] ScheduleCmd 计划命令已加载！" << endl;
-    std::cout << "[ScheduleCmd] 配置文件位于：plugins/ScheduleCmd/schedule.json" << endl;
-    std::cout << "[ScheduleCmd] 在后台使用 /schedule 命令来设置命令定时执行计划" << endl;
+    LL::registerPlugin("ScheduleCmd", "Schedule your command execute in language of crontab", ver, {
+        {"GitHub","https://github.com/yqs112358/LLPlugins"} });
+
+    std::cout << u8"[ScheduleCmd] ScheduleCmd 计划命令已加载！" << endl;
+    std::cout << u8"[ScheduleCmd] 配置文件位于：plugins/ScheduleCmd/schedule.json" << endl;
+    std::cout << u8"[ScheduleCmd] 在后台使用 /schedule 命令来设置命令定时执行计划" << endl;
 
     Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent& ev) {
         LoadConfigFile(CONFIG_PATH);
-        std::cout << "[ScheduleCmd] 计划命令系统已开始计时" << endl;
+        std::cout << u8"[ScheduleCmd] 计划命令系统已开始计时" << endl;
         return true;
     });
 
