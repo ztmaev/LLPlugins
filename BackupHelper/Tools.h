@@ -8,7 +8,7 @@ using namespace std;
 
 inline void ErrorOutput(const string& err)
 {
-    Logger::Error("{}",err);
+    logger.error("{}",err);
 }
 
 inline void SendFeedback(Player* p, const string& msg)
@@ -30,7 +30,7 @@ inline void SendFeedback(Player* p, const string& msg)
     }
 
     if (!p)
-        Logger::Info(msg);
+        logger.info(msg);
     else
     {
         try
@@ -41,13 +41,13 @@ inline void SendFeedback(Player* p, const string& msg)
         {
             extern Player* nowPlayer;
             nowPlayer = nullptr;
-            Logger::Info(msg);
+            logger.info(msg);
         }
         catch (const exception&)
         {
             extern Player* nowPlayer;
             nowPlayer = nullptr;
-            Logger::Info(msg);
+            logger.info(msg);
         }
     }
 }

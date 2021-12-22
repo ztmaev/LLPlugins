@@ -17,6 +17,8 @@ CSimpleIniA ini;
 bool isStopping = false;
 bool isServerStarted = false;
 
+Logger logger("SafeStop");
+
 //Utils
 
 vector<Player*> Raw_GetOnlinePlayers()
@@ -38,7 +40,7 @@ void SafeStop()
         return;
     isStopping = true;
 
-    Logger::Info("Safe Stop processing...");
+    logger.info("Safe Stop processing...");
     auto players = Raw_GetOnlinePlayers();
     for (auto& pl : players)
     {
@@ -69,7 +71,7 @@ BOOL CtrlHandler(DWORD fdwCtrlType)
     case CTRL_C_EVENT:
     case CTRL_CLOSE_EVENT:
     case CTRL_SHUTDOWN_EVENT:
-        Logger::Info("Stop detected.");
+        logger.info("Stop detected.");
         SafeStop();
         return TRUE;
 
@@ -86,7 +88,7 @@ BOOL CtrlHandler(DWORD fdwCtrlType)
 void entry(HMODULE hMod)
 {
     if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE))
-        Logger::Error("Fail to enable Console Close Protection!");
+        logger.info("Fail to enable Console Close Protection!");
 
     HWND hwnd = GetConsoleWindow();
     HMENU hmenu = GetSystemMenu(hwnd, false);
@@ -102,5 +104,5 @@ void entry(HMODULE hMod)
 
     ini.SetUnicode(true);
     auto res = ini.LoadFile(_CONF_PATH);
-    Logger::Info("BetterStop 关服保护插件-已装载  当前版本：{}", _VER);
+    logger.info("BetterStop 关服保护插件-已装载  当前版本：{}", _VER);
 }

@@ -97,7 +97,7 @@ void BackupCommand::execute(CommandOrigin const& ori, CommandOutput& outp) const
         CmdCancel(player);
         break;
     default:
-        Logger::Warn("未知操作！");
+        logger.warn("未知操作！");
     }
 }
 

@@ -10,6 +10,8 @@ using namespace std;
 #define _VER "2.0.3"
 CSimpleIniA ini;
 
+Logger logger("BackupHelper");
+
 // ===== onConsoleCmd =====
 THook(bool, "??$inner_enqueue@$0A@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$SPSCQueue@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@$0CAA@@@AEAA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
     void* _this, string& cmd)
@@ -59,11 +61,11 @@ void entry()
     InitI18n(string("plugins/BackupHelper/LangPack/") + ini.GetValue("Main", "Language", "en_US") + ".json");
 
     
-	Logger::Info("BackupHelper存档备份助手-已装载  当前版本：{}", _VER);
-	Logger::Info("OP/后台命令： backup 开始备份");
-	Logger::Info("OP/后台命令： backup reload 重新加载配置文件");
-	Logger::Info("作者：yqs112358   首发平台：MineBBS");
-	Logger::Info("欲联系作者可前往MineBBS论坛");
+	logger.info("BackupHelper存档备份助手-已装载  当前版本：{}", _VER);
+    logger.info("OP/后台命令： backup 开始备份");
+    logger.info("OP/后台命令： backup reload 重新加载配置文件");
+    logger.info("作者：yqs112358   首发平台：MineBBS");
+    logger.info("欲联系作者可前往MineBBS论坛");
 
     //Cleanup Old
     if (filesystem::exists("plugins/BackupHelper.lxl.js"))

@@ -1,10 +1,10 @@
 #include "pch.h"
-#include "../Header/Global.h"
-#include "../Header/LLAPI.h"
-#include "../Header/MC/Player.hpp"
-#include "../Header/MC/Level.hpp"
-#include "../Header/EventAPI.h"
-#include "../Header/RegCommandAPI.h"
+#include <Global.h>
+#include <LLAPI.h>
+#include <MC/Player.hpp>
+#include <MC/Level.hpp>
+#include <EventAPI.h>
+#include <RegCommandAPI.h>
 #include <string>
 #include "SimpleIni.h"
 
@@ -15,6 +15,8 @@ using namespace std;
 #define _CONF_PATH "plugins/BanExplosion/config.ini"
 
 CSimpleIniA ini;
+
+Logger logger("BanExplosion");
 
 // 防爆
 bool suspend = false;
@@ -96,20 +98,20 @@ class BanExplodeCommand : public Command {
         {
         case EXPOP::off:
             suspend = true;
-            Logger::Info("=== 自定义防爆规则已临时关闭 ===");
+            logger.info("=== 自定义防爆规则已临时关闭 ===");
             break;
         case EXPOP::on:
             suspend = false;
-            Logger::Info("=== 自定义防爆规则已启用 ===");
+            logger.info("=== 自定义防爆规则已启用 ===");
             break;
         case EXPOP::reload:
             if (ReloadIni())
-                Logger::Info("配置文件已重新加载。");
+                logger.info("配置文件已重新加载。");
             else
-                Logger::Error("配置文件解析失败！插件将不会正常工作");
+                logger.error("配置文件解析失败！插件将不会正常工作");
             break;
         default:
-            Logger::Warn("未知操作！");
+            logger.warn("未知操作！");
         }
     }
 public:
@@ -137,8 +139,8 @@ void entry()
     auto res = ini.LoadFile(_CONF_PATH);
     if (res < 0)
     {
-        Logger::Error("防爆插件加载配置文件失败！");
-        Logger::Error("插件将不会正常工作。");
+        logger.error("防爆插件加载配置文件失败！");
+        logger.error("插件将不会正常工作。");
         return;
     }
 
@@ -147,8 +149,8 @@ void entry()
             BanExplodeCommand::setup(ev.mCommandRegistry);
             return true;
     });
-    Logger::Info("BanExplosion自定义防爆插件-已装载  当前版本：{}", _VER);
-    Logger::Info("配置文件位于：{}", _CONF_PATH);
-    Logger::Info("作者：yqs112358   首发平台：MineBBS");
-    Logger::Info("欲联系作者可前往MineBBS论坛");
+    logger.info("BanExplosion自定义防爆插件-已装载  当前版本：{}", _VER);
+    logger.info("配置文件位于：{}", _CONF_PATH);
+    logger.info("作者：yqs112358   首发平台：MineBBS");
+    logger.info("欲联系作者可前往MineBBS论坛");
 }

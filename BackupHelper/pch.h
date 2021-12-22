@@ -19,4 +19,6 @@
 #include <iostream>
 #include <ctime>
 
+extern Logger logger;
+
 #endif //PCH_H
