@@ -8,7 +8,7 @@
 #include <filesystem>
 using namespace std;
 
-#define TEMP_DIR ".\\plugins\\BackupHelper\\temp\\"
+#define TEMP_DIR "./plugins/BackupHelper/temp/"
 #define ZIP_PATH ".\\plugins\\BackupHelper\\7za.exe"
 
 bool isWorking = false;
@@ -74,7 +74,7 @@ void ClearOldBackup()
     SendFeedback(nowPlayer, "备份最长保存时间：" + to_string(days) + "天");
 
     time_t timeStamp = time(NULL) - days * 86400;
-    wstring dirBackup = U8StringToWString(ini.GetValue("Main", "BackupPath", "backup"));
+    wstring dirBackup = str2wstr(ini.GetValue("Main", "BackupPath", "backup"));
     wstring dirFind = dirBackup + L"\\*";
 
     WIN32_FIND_DATA findFileData;
@@ -115,7 +115,7 @@ void CleanTempDir()
     filesystem::remove_all(filesystem::path(TEMP_DIR),code);
 }
 
-void CopyFiles(const string &worldName, vector<SnapshotFilenameAndLength>& files)
+bool CopyFiles(const string &worldName, vector<SnapshotFilenameAndLength>& files)
 {
     SendFeedback(nowPlayer, "已抓取到BDS待备份文件清单。正在处理...");
     SendFeedback(nowPlayer, "正在复制文件...");
@@ -126,11 +126,12 @@ void CopyFiles(const string &worldName, vector<SnapshotFilenameAndLength>& files
     filesystem::create_directories(TEMP_DIR,ec);
     ec.clear();
     
-    filesystem::copy(".\\worlds\\" + worldName, TEMP_DIR + worldName, std::filesystem::copy_options::recursive,ec);
+    filesystem::copy(str2wstr("./worlds/" + worldName), str2wstr(TEMP_DIR + worldName), std::filesystem::copy_options::recursive,ec);
     if (ec.value() != 0)
     {
         SendFeedback(nowPlayer, "Failed to copy save files!\n" + ec.message());
         FailEnd(GetLastError());
+        return false;
     }
 
     //Truncate
@@ -141,20 +142,22 @@ void CopyFiles(const string &worldName, vector<SnapshotFilenameAndLength>& files
         LARGE_INTEGER pos;
         pos.QuadPart = file.size;
         LARGE_INTEGER curPos;
-        HANDLE hSaveFile = CreateFileW(U8StringToWString(toFile).c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, 0);
+        HANDLE hSaveFile = CreateFileW(str2wstr(toFile).c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, 0);
 
         if (hSaveFile == INVALID_HANDLE_VALUE || !SetFilePointerEx(hSaveFile, pos, &curPos, FILE_BEGIN)
             || !SetEndOfFile(hSaveFile))
         {
             SendFeedback(nowPlayer, "Failed to truncate " + toFile + "!");
             FailEnd(GetLastError());
+            return false;
         }
         CloseHandle(hSaveFile);
     }
     SendFeedback(nowPlayer, "压缩过程可能花费相当长的时间，请耐心等待");
+    return true;
 }
 
-void ZipFiles(const string &worldName)
+bool ZipFiles(const string &worldName)
 {
     try
     {
@@ -174,7 +177,7 @@ void ZipFiles(const string &worldName)
             , backupPath.c_str(), worldName.c_str(), timeStr, TEMP_DIR, worldName.c_str(), level);
 
         wchar_t paras[_MAX_PATH * 4] = { 0 };
-        U8StringToWString(tmpParas).copy(paras, strlen(tmpParas), 0);
+        str2wstr(tmpParas).copy(paras, strlen(tmpParas), 0);
 
         DWORD maxWait = ini.GetLongValue("Main", "MaxWaitForZip", 0);
         if (maxWait <= 0)
@@ -183,7 +186,7 @@ void ZipFiles(const string &worldName)
             maxWait *= 1000;
 
         //Start Process
-        wstring zipPath = U8StringToWString(ZIP_PATH);
+        wstring zipPath = str2wstr(ZIP_PATH);
         SHELLEXECUTEINFO sh = { sizeof(SHELLEXECUTEINFO) };
         sh.fMask = SEE_MASK_NOCLOSEPROCESS;
         sh.hwnd = NULL;
@@ -195,6 +198,7 @@ void ZipFiles(const string &worldName)
         {
             SendFeedback(nowPlayer, "Fail to create Zip process!");
             FailEnd(GetLastError());
+            return false;
         }
         
         ControlResourceUsage(sh.hProcess);
@@ -213,15 +217,18 @@ void ZipFiles(const string &worldName)
     {
         SendFeedback(nowPlayer, "Exception in zip process! Error Code:" + to_string(e.code()));
         FailEnd(GetLastError());
+        return false;
     }
     catch (const exception& e)
     {
         SendFeedback(nowPlayer, string("Exception in zip process!\n") + e.what());
         FailEnd(GetLastError());
+        return false;
     }
+    return true;
 }
 
-void StartBackup()
+bool StartBackup()
 {
     SendFeedback(nowPlayer, "备份已启动");
     isWorking = true;
@@ -234,7 +241,9 @@ void StartBackup()
     {
         SendFeedback(nowPlayer, "Failed to start backup snapshot!");
         FailEnd(e.code());
+        return false;
     }
+    return true;
 }
 
 #define RETRY_TIME 60
@@ -288,16 +297,17 @@ THook(vector<SnapshotFilenameAndLength>&, "?createSnapshot@DBStorage@@UEAA?AV?$v
     DBStorage* _this, vector<SnapshotFilenameAndLength>& fileData, string& worldName)
 {
     isWorking = true;
-	auto& files = original(_this, fileData, worldName);
-    CopyFiles(worldName, files);
-
-    thread([worldName]()
+    auto& files = original(_this, fileData, worldName);
+    if (CopyFiles(worldName, files))
     {
-        _set_se_translator(seh_exception::TranslateSEHtoCE);
-        ZipFiles(worldName);
-        CleanTempDir();
-        SuccessEnd();
-    }).detach();
+        thread([worldName]()
+        {
+            _set_se_translator(seh_exception::TranslateSEHtoCE);
+            ZipFiles(worldName);
+            CleanTempDir();
+            SuccessEnd();
+        }).detach();
+    }
 
     resumeTime = 20;
     return files;

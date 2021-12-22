@@ -4,7 +4,7 @@
 #include <api/LiteLoaderApi.h>
 #include <stl/views.h>
 #include <stl/optional.h>
-#include <liteloader.h>
+#include <LoaderApi.h>
 #include <mc/Core.h>
 #include <mc/mass.h>
 typedef unsigned long long xuid_t;
@@ -19,7 +19,8 @@ enum TextType : char {
 	SYSTEM = 6,
 	WHISPER = 7,
 	ANNOUNCEMENT = 8,
-	JSON = 9
+	JSON = 9,
+	JSON_WHISPER = 10
 };
 template <typename T>
 struct Wrapped {

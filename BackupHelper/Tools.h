@@ -58,16 +58,24 @@ inline void SendFeedback(Player* p, const string& msg)
     }
 }
 
-inline wstring U8StringToWString(const string& u8str)
-{
-    int targetLen = MultiByteToWideChar(CP_UTF8, 0, u8str.c_str(), -1, NULL, 0);
-    if (targetLen == ERROR_NO_UNICODE_TRANSLATION || targetLen == 0)
-        return L"";
-    wchar_t* res = new wchar_t[targetLen + 1];
-    ZeroMemory(res, sizeof(wchar_t) * (targetLen + 1));
-    size_t resLen = MultiByteToWideChar(CP_UTF8, 0, u8str.c_str(), -1, res, targetLen);
-    wstring resStr = wstring(res);
+inline wstring str2wstr(string str) {
+    auto len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
+    wchar_t* buffer = new wchar_t[len + 1];
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, buffer, len + 1);
+    buffer[len] = L'\0';
 
-    delete[] res;
-    return resStr;
+    wstring result = wstring(buffer);
+    delete[] buffer;
+    return result;
+}
+
+inline string wstr2str(wstring wstr) {
+    auto  len = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, NULL, 0, NULL, NULL);
+    char* buffer = new char[len + 1];
+    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, buffer, len + 1, NULL, NULL);
+    buffer[len] = '\0';
+
+    string result = string(buffer);
+    delete[] buffer;
+    return result;
 }

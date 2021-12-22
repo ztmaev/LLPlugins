@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "headers/lbpch.h"
 #include "headers/mc/OffsetHelper.h"
-#include "headers/api/commands.h"
+#include "headers/api/regCommandHelper.h"
 #include "headers/loader/Loader.h"
 #include <string>
 #include "SimpleIni.h"
 using namespace std;
 
-#define _VER "1.5.3"
+#define _VER "1.5.4"
 #define _CONF_PATH "plugins/BanExplosion/config.ini"
 
 CSimpleIniA ini;
