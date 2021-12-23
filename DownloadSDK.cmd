@@ -30,7 +30,7 @@ if not exist %LL_SDK_DIRECTORY_PATH% (
     git subtree pull --prefix=%LL_SDK_DIRECTORY_PATH% %LL_SDK_REMOTE_PATH% %LL_SDK_USE_BRANCH% --squash
 )
 
-git stash pop
+git stash pop -q
 echo.
 echo.
 echo [INFO] Upgrading LL-SDK from GitHub finished.
