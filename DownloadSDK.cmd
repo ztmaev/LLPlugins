@@ -21,11 +21,17 @@ for /f "tokens=3* delims= " %%i in ('Reg query "HKCU\Software\Microsoft\Windows\
 
 echo [INFO] Upgrading LL-SDK from GitHub ...
 echo.
+git stash save "Uploading LL SDK..."
+echo.
+
 if not exist %LL_SDK_DIRECTORY_PATH% (
     git subtree add --prefix=%LL_SDK_DIRECTORY_PATH% %LL_SDK_REMOTE_PATH% %LL_SDK_USE_BRANCH% --squash
 ) else (
     git subtree pull --prefix=%LL_SDK_DIRECTORY_PATH% %LL_SDK_REMOTE_PATH% %LL_SDK_USE_BRANCH% --squash
 )
+
+git stash pop
+echo.
 echo.
 echo [INFO] Upgrading LL-SDK from GitHub finished.
 echo.
