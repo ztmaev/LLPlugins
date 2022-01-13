@@ -36,6 +36,8 @@ namespace Event {
 constexpr bool Ok = true;
 constexpr bool Cancel = false;
 
+LIAPI void OutputEventError(const string& errorMsg, const string& eventName, const string& pluginName);
+
 template <typename ListenersContainer>
 class EventListener {
 private:
@@ -95,16 +97,14 @@ public:
                     passToBDS = false;
             }
             return passToBDS;
-        } catch (const seh_exception& e) {
-            logger.error("Uncaught SEH Exception Detected!");
-            logger.error("In Event ({})", typeid(EVENT).name());
-            if(!i->first.empty())
-                logger.error("In Plugin <{}>", i->first);
-        } catch (const std::exception& e) {
-            logger.error("Uncaught Exception Detected!");
-            logger.error("In Event ({})", typeid(EVENT).name());
-            if (!i->first.empty())
-                logger.error("In Plugin <{}>", i->first);
+        }
+        catch (const seh_exception& e)
+        {
+            OutputEventError("Uncaught SEH Exception Detected!", typeid(EVENT).name(), i->first);
+        }
+        catch (const std::exception& e)
+        {
+            OutputEventError(string("Uncaught Exception Detected! ") + e.what(), typeid(EVENT).name(), i->first);
         }
         return passToBDS;
     }
@@ -178,6 +178,13 @@ public:
     Player* mPlayer;
     Actor* mTarget;
     int mAttackDamage;
+};
+
+class PlayerAttackBlockEvent : public EventTemplate<PlayerAttackBlockEvent> {
+public:
+    Player* mPlayer;
+    ItemStack* mItemStack;
+    BlockInstance mBlockInstance;
 };
 
 class PlayerDieEvent : public EventTemplate<PlayerDieEvent> {
@@ -344,6 +351,7 @@ public:
 class ContainerChangeEvent : public EventTemplate<ContainerChangeEvent> {
 public:
     Player* mPlayer;
+    Actor* mActor;
     BlockInstance mBlockInstance;
     Container* mContainer;
     int mSlot;
