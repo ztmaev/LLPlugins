@@ -292,7 +292,6 @@ THook(void, "?tick@ServerLevel@@UEAAXXZ",
     return original(_this);
 }
 
-struct DBStorage;
 THook(vector<SnapshotFilenameAndLength>&, "?createSnapshot@DBStorage@@UEAA?AV?$vector@USnapshotFilenameAndLength@@V?$allocator@USnapshotFilenameAndLength@@@std@@@std@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@3@@Z",
     DBStorage* _this, vector<SnapshotFilenameAndLength>& fileData, string& worldName)
 {

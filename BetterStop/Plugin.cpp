@@ -17,7 +17,7 @@ bool isStopping = false;
 bool isServerStarted = false;
 
 Logger logger("SafeStop");
-LL::Version ver(2, 0, 1);
+LL::Version ver(2, 0, 2);
 
 //Utils
 

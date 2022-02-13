@@ -7,7 +7,7 @@
 #include "Tools.h"
 using namespace std;
 
-LL::Version ver(2, 0, 5);
+LL::Version ver(2, 0, 6);
 CSimpleIniA ini;
 
 Logger logger("BackupHelper");

@@ -17,7 +17,7 @@ bool RegisterCmd(CommandRegistry *reg, const string& cmd, const string& describe
 void RegisterCmdProcess();
 
 Logger logger("ScheduleCmd");
-LL::Version ver(1, 1, 0);
+LL::Version ver(1, 1, 1);
 
 void entry()
 {

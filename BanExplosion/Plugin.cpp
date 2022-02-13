@@ -4,6 +4,7 @@
 #include <MC/Player.hpp>
 #include <MC/Level.hpp>
 #include <EventAPI.h>
+#include <MC/Block.hpp>
 #include <RegCommandAPI.h>
 #include <string>
 #include "SimpleIni.h"
@@ -16,48 +17,10 @@ using namespace std;
 CSimpleIniA ini;
 
 Logger logger("BanExplosion");
-LL::Version ver(1, 5, 5);
+LL::Version ver(1, 5, 7);
 
 // 防爆
 bool suspend = false;
-
-// ===== onExplode & onBedExplode =====
-THook(void, "?explode@Explosion@@QEAAXXZ",
-    void* self)
-{
-    auto actor = (Actor*)*((QWORD*)self + 11);
-    //auto pos = *(Vec3*)(QWORD*)self;
-    //auto radius = *((float*)self + 3);
-    //auto bs = (BlockSource*)*((QWORD*)self + 12);
-    //auto maxResistance = *((float*)self + 26);
-    //auto genFire = (bool)*((BYTE*)self + 80);
-    //auto canBreaking = (bool)*((BYTE*)self + 81);
-
-    if (!suspend)
-    {
-        if (actor)
-        {
-            //常规
-            string name = actor->getTypeName();
-            if (ini.GetBoolValue(name.c_str(), "NoExplosion"))
-                return;
-            if (ini.GetBoolValue(name.c_str(), "NoDestroyBlock"))
-                *((BYTE*)self + 81) = false;
-        }
-        else
-        {
-            //床
-            if (ini.GetBoolValue("minecraft:bed", "NoExplosion"))
-                return;
-            if (ini.GetBoolValue("minecraft:bed", "NoDestroyBlock"))
-                *((BYTE*)self + 81) = false;
-        }
-    }
-    original(self);
-}
-
-
-// Command
 
 bool ReloadIni()
 {
@@ -137,6 +100,43 @@ void entry()
         if (!suspend && ini.GetBoolValue("minecraft:wither", "NoDestroyBlock"))
             return false;
         return true;
+    });
+
+    Event::EntityExplodeEvent::subscribe_ref([](Event::EntityExplodeEvent& ev) {
+        if (suspend)
+            return true;
+        string name = ev.mActor->getTypeName();
+        if (ini.GetBoolValue(name.c_str(), "NoExplosion"))
+            return false;
+        if (ini.GetBoolValue(name.c_str(), "NoDestroyBlock"))
+            ev.mBreaking = false;
+        return true;
+    });
+
+    Event::BlockExplodeEvent::subscribe_ref([](Event::BlockExplodeEvent& ev) {
+        if (suspend)
+            return true;
+        string name = ev.mBlockInstance.getBlock()->getTypeName();
+
+        /*if (ini.GetBoolValue(name.c_str(), "NoExplosion"))
+            return false;
+        if (ini.GetBoolValue(name.c_str(), "NoDestroyBlock"))
+            ev.mBreaking = false;*/
+
+        if (ini.GetBoolValue("minecraft:bed", "NoExplosion"))           //bed
+            return false;
+        if (ini.GetBoolValue("minecraft:bed", "NoDestroyBlock"))
+            ev.mBreaking = false;
+        return true;
+    });
+
+    Event::PlayerUseRespawnAnchorEvent::subscribe([](const Event::PlayerUseRespawnAnchorEvent& ev) {
+        if (suspend)
+            return true;
+        if (ini.GetBoolValue("minecraft:respawn_anchor", "NoExplosion"))
+            return false;
+        else
+            return true;
     });
 
     Event::RegCmdEvent::subscribe([](Event::RegCmdEvent ev)
