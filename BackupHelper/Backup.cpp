@@ -26,7 +26,7 @@ void SuccessEnd()
 {
     SendFeedback(nowPlayer, "备份成功结束");
     nowPlayer = nullptr;
-    isWorking = false;
+    // The isWorking assignment here has been moved to line 321
 }
 
 void FailEnd(int code=-1)
@@ -295,19 +295,29 @@ THook(void, "?tick@ServerLevel@@UEAAXXZ",
 THook(vector<SnapshotFilenameAndLength>&, "?createSnapshot@DBStorage@@UEAA?AV?$vector@USnapshotFilenameAndLength@@V?$allocator@USnapshotFilenameAndLength@@@std@@@std@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@3@@Z",
     DBStorage* _this, vector<SnapshotFilenameAndLength>& fileData, string& worldName)
 {
-    isWorking = true;
-    auto& files = original(_this, fileData, worldName);
-    if (CopyFiles(worldName, files))
-    {
-        thread([worldName]()
+    if (isWorking) {
+        auto& files = original(_this, fileData, worldName);
+        if (CopyFiles(worldName, files))
         {
-            _set_se_translator(seh_exception::TranslateSEHtoCE);
-            ZipFiles(worldName);
-            CleanTempDir();
-            SuccessEnd();
-        }).detach();
-    }
+            thread([worldName]()
+                {
+                    _set_se_translator(seh_exception::TranslateSEHtoCE);
+                    ZipFiles(worldName);
+                    CleanTempDir();
+                    SuccessEnd();
+                }).detach();
+        }
 
-    resumeTime = 20;
-    return files;
+        resumeTime = 20;
+        return files;
+    }
+    else {
+        isWorking = true; // Prevent the backup command from being accidentally executed during a map hang
+        return original(_this, fileData, worldName);
+    }
+}
+
+THook(void, "?releaseSnapshot@DBStorage@@UEAAXXZ", DBStorage* _this) {
+    isWorking = false;
+    original(_this);
 }
