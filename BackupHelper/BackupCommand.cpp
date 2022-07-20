@@ -3,6 +3,7 @@
 #include "Backup.h"
 #include "ConfigFile.h"
 #include "Tools.h"
+#include "ScheduleAPI.h"
 using namespace std;
 
 void CmdReloadConfig(Player *p)
@@ -29,7 +30,7 @@ void CmdBackup(Player* p)
         nowPlayer = oldp;
     }
     else
-        StartBackup();
+        Schedule::nextTick(StartBackup);
 }
 
 void CmdCancel(Player* p)
