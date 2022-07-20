@@ -48,8 +48,8 @@ void CmdCancel(Player* p)
 
 #ifdef LEGACY_COMMAND
 
-#include "../Header/MC/CommandContext.hpp"
-#include "../Header/MC/CommandOrigin.hpp"
+#include "MC/CommandContext.hpp"
+#include "MC/CommandOrigin.hpp"
 THook(bool, "?executeCommand@MinecraftCommands@@QEBA?AUMCRESULT@@V?$shared_ptr@VCommandContext@@@std@@_N@Z",
     MinecraftCommands* _this, unsigned int* a2, std::shared_ptr<CommandContext> x, char a4)
 {

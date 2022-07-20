@@ -2,11 +2,11 @@
 //#define LEGACY_COMMAND
 
 #ifdef LEGACY_COMMAND
-#include "../Header/MC/CommandRegistry.hpp"
-#include "../Header/MC/CommandParameterData.hpp"
+#include "MC/CommandRegistry.hpp"
+#include "MC/CommandParameterData.hpp"
 
 #else
-#include "../Header/RegCommandAPI.h"
+#include "RegCommandAPI.h"
 
 class BackupCommand : public Command {
     enum class BackupOP :int {

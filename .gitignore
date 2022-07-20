@@ -4,6 +4,6 @@ x64/
 *.zip
 RELEASE/
 BAK/
-/Lib/bedrock_server_api.lib
-/Lib/bedrock_server_var.lib
+**/bedrock_server_api.lib
+**/bedrock_server_var.lib
 *.user
