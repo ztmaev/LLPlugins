@@ -9,11 +9,11 @@
 
 // 添加要在此处预编译的标头
 #include <iostream>
-#include "../Header/Global.h"
-#include "../Header/LLAPI.h"
-#include "../Header/MC/Player.hpp"
-#include "../Header/MC/Level.hpp"
-#include "../Header/EventAPI.h"
+#include "Global.h"
+#include "LLAPI.h"
+#include "MC/Player.hpp"
+#include "MC/Level.hpp"
+#include "EventAPI.h"
 #include <string>
 #include <vector>
 #include <iostream>
