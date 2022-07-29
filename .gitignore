@@ -2,7 +2,7 @@
 x64/
 *.dll
 *.zip
-RELEASE/
+RELEASE/*.dll
 BAK/
 **/bedrock_server_api.lib
 **/bedrock_server_var.lib
